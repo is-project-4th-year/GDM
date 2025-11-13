@@ -1,0 +1,525 @@
+{% extends 'base.html' %}
+
+{% block title %}Error - GDM Predictor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .error-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+    }
+
+    .error-card {
+        background: var(--white);
+        border-radius: 1.5rem;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        padding: 3rem;
+        width: 100%;
+        max-width: 500px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .error-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--error), #dc2626);
+    }
+
+    .error-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--error), #dc2626);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        color: white;
+        font-size: 2rem;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    .error-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 1rem;
+    }
+
+    .error-message {
+        font-size: 1.125rem;
+        color: var(--gray-600);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .error-code {
+        display: inline-block;
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--error);
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .error-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary {
+        background: var(--white);
+        color: var(--gray-700);
+        border: 2px solid var(--gray-300);
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-1px);
+    }
+
+    .error-details {
+        background: var(--gray-50);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        border: 1px solid var(--gray-200);
+        text-align: left;
+    }
+
+    .details-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .details-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .details-item {
+        padding: 0.5rem 0;
+        color: var(--gray-600);
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .details-item i {
+        color: var(--primary);
+        width: 16px;
+    }
+
+    .help-section {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(6, 182, 212, 0.05));
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-top: 2rem;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .help-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .help-text {
+        color: var(--gray-600);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+
+    .contact-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        padding: 1rem;
+        background: var(--white);
+        border-radius: 0.75rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .contact-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.875rem;
+    }
+
+    .contact-details {
+        flex: 1;
+    }
+
+    .contact-details a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .contact-details a:hover {
+        text-decoration: underline;
+    }
+
+    .error-animation {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 20px;
+        height: 20px;
+        background: var(--error);
+        border-radius: 50%;
+        animation: bounce 1s infinite alternate;
+        opacity: 0.7;
+    }
+
+    @keyframes bounce {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-10px); }
+    }
+
+    @media (max-width: 768px) {
+        .error-container {
+            padding: 1rem;
+        }
+
+        .error-card {
+            padding: 2rem;
+        }
+
+        .error-title {
+            font-size: 1.5rem;
+        }
+
+        .error-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-card">
+        <div class="error-animation"></div>
+        
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+
+        <h1 class="error-title">Oops! Something went wrong</h1>
+        
+        <p class="error-message">
+            {% if error %}
+                {{ error }}
+            {% else %}
+                We encountered an unexpected error while processing your request. Our team has been notified and is working to resolve this issue.
+            {% endif %}
+        </p>
+
+        <div class="error-code">
+            Error Code: SYS-{{ range(1000, 9999) | random }}
+        </div>
+
+        <div class="error-actions">
+            <a href="{{ url_for('core.index') }}" class="btn btn-primary">
+                <i class="fas fa-home"></i>
+                Return Home
+            </a>
+            <button onclick="window.history.back()" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Go Back
+            </button>
+        </div>
+
+        <div class="error-details">
+            <div class="details-title">
+                <i class="fas fa-info-circle"></i>
+                What you can try:
+            </div>
+            <ul class="details-list">
+                <li class="details-item">
+                    <i class="fas fa-refresh"></i>
+                    Refresh the page and try again
+                </li>
+                <li class="details-item">
+                    <i class="fas fa-clock"></i>
+                    Wait a few minutes and retry your request
+                </li>
+                <li class="details-item">
+                    <i class="fas fa-browser"></i>
+                    Clear your browser cache and cookies
+                </li>
+                <li class="details-item">
+                    <i class="fas fa-wifi"></i>
+                    Check your internet connection
+                </li>
+            </ul>
+        </div>
+
+        <div class="help-section">
+            <div class="help-title">
+                <i class="fas fa-question-circle"></i>
+                Need Help?
+            </div>
+            <p class="help-text">
+                If the problem persists, please don't hesitate to contact our support team. 
+                We're here to help you get back to using the GDM Predictor system as quickly as possible.
+            </p>
+            
+            <div class="contact-info">
+                <div class="contact-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="contact-details">
+                    <strong>Email Support:</strong><br>
+                    <a href="mailto:njau.kimani@strathmore.edu">njau.kimani@strathmore.edu</a>
+                </div>
+            </div>
+            
+            <div class="contact-info">
+                <div class="contact-icon">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <div class="contact-details">
+                    <strong>Phone Support:</strong><br>
+                    <a href="tel:+254791364118">+254 791 364 118</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add some interactive effects
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate error icon on page load
+        const errorIcon = document.querySelector('.error-icon');
+        if (errorIcon) {
+            setTimeout(() => {
+                errorIcon.style.animation = 'pulse 2s infinite';
+            }, 500);
+        }
+
+        // Add click effect to buttons
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                // Create ripple effect
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.style.position = 'absolute';
+                ripple.style.borderRadius = '50%';
+                ripple.style.background = 'rgba(255, 255, 255, 0.3)';
+                ripple.style.pointerEvents = 'none';
+                ripple.style.animation = 'ripple 0.6s linear';
+                
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // Auto-reload functionality (optional)
+        let autoReloadTimer;
+        const startAutoReload = () => {
+            autoReloadTimer = setTimeout(() => {
+                if (confirm('Would you like to automatically retry loading the page?')) {
+                    window.location.reload();
+                }
+            }, 30000); // 30 seconds
+        };
+
+        // Clear timer if user interacts with page
+        document.addEventListener('click', () => {
+            if (autoReloadTimer) {
+                clearTimeout(autoReloadTimer);
+            }
+        });
+
+        // Show toast notification about the error
+        setTimeout(() => {
+            showToast('An error occurred. Please try the suggested solutions below.', 'error');
+        }, 1000);
+    });
+
+    // Add ripple animation keyframes
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes ripple {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+        
+        .btn {
+            position: relative;
+            overflow: hidden;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Add refresh functionality
+    function refreshPage() {
+        window.location.reload();
+    }
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Press 'H' to go home
+        if (e.key === 'h' || e.key === 'H') {
+            window.location.href = "{{ url_for('core.index') }}";
+        }
+        
+        // Press 'R' to refresh
+        if (e.key === 'r' || e.key === 'R') {
+            window.location.reload();
+        }
+        
+        // Press 'B' to go back
+        if (e.key === 'b' || e.key === 'B') {
+            window.history.back();
+        }
+    });
+</script>
+
+<style>
+    /* Additional print styles for error page */
+    @media print {
+        .error-animation,
+        .error-actions,
+        .help-section {
+            display: none !important;
+        }
+        
+        .error-card {
+            box-shadow: none;
+            border: 1px solid #ccc;
+        }
+        
+        .error-icon {
+            animation: none !important;
+        }
+    }
+    
+    /* Accessibility improvements */
+    .btn:focus {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+    }
+    
+    .error-card:focus-within {
+        border-color: var(--primary);
+    }
+    
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+        .error-card {
+            border: 2px solid var(--gray-800);
+        }
+        
+        .error-icon {
+            background: var(--error);
+            border: 2px solid var(--gray-800);
+        }
+    }
+    
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+        .error-icon,
+        .error-animation {
+            animation: none !important;
+        }
+        
+        .btn {
+            transition: none !important;
+        }
+    }
+</style>
+{% endblock %}

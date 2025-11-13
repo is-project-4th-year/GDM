@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Home - GDM Risk Prediction{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    
+    <!-- Hero Section -->
+    <div class="row align-items-center mb-5">
+        <div class="col-lg-6">
+            <div class="pe-lg-4">
+                <h1 class="display-4 fw-bold text-primary mb-3">
+                    Gestational Diabetes Risk Prediction
+                </h1>
+                <p class="lead text-muted mb-4">
+                    Evidence-based clinical decision support tool for early identification 
+                    and risk stratification of Gestational Diabetes Mellitus (GDM).
+                </p>
+                <div class="d-grid gap-3 d-sm-flex">
+                    <a href="#" class="btn btn-primary btn-lg px-4 disabled">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                        Get Started
+                    </a>
+                    <a href="#features" class="btn btn-outline-secondary btn-lg px-4">
+                        Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="text-center">
+                <div class="bg-primary bg-opacity-10 rounded-3 p-5">
+                    <i class="bi bi-heart-pulse text-primary" style="font-size: 8rem;"></i>
+                    <h3 class="text-primary mt-3">Clinical Excellence</h3>
+                    <p class="text-muted">Powered by machine learning and clinical expertise</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Features Section -->
+    <div id="features" class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-speedometer2 text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                    <h5 class="card-title">Real-time Assessment</h5>
+                    <p class="card-text text-muted">
+                        Instant risk stratification using validated clinical parameters 
+                        and machine learning algorithms.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-shield-check text-success" style="font-size: 2rem;"></i>
+                    </div>
+                    <h5 class="card-title">Evidence-Based</h5>
+                    <p class="card-text text-muted">
+                        Built on peer-reviewed research and validated against 
+                        clinical outcomes in diverse populations.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-graph-up text-info" style="font-size: 2rem;"></i>
+                    </div>
+                    <h5 class="card-title">Comprehensive Reporting</h5>
+                    <p class="card-text text-muted">
+                        Generate detailed clinical reports with risk scores, 
+                        recommendations, and patient history tracking.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Clinical Workflow -->
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold text-dark">Clinical Workflow</h2>
+                <p class="text-muted lead">Streamlined process for comprehensive GDM risk assessment</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4 mb-5">
+        <div class="col-lg-2 col-md-4">
+            <div class="text-center">
+                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <span class="fw-bold">1</span>
+                </div>
+                <h6 class="fw-semibold">Patient Registration</h6>
+                <small class="text-muted">Secure patient data entry</small>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4">
+            <div class="text-center">
+                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <span class="fw-bold">2</span>
+                </div>
+                <h6 class="fw-semibold">Clinical Metrics</h6>
+                <small class="text-muted">BMI, BP, lab values</small>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4">
+            <div class="text-center">
+                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <span class="fw-bold">3</span>
+                </div>
+                <h6 class="fw-semibold">Risk Assessment</h6>
+                <small class="text-muted">ML-powered prediction</small>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4">
+            <div class="text-center">
+                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <span class="fw-bold">4</span>
+                </div>
+                <h6 class="fw-semibold">Results Review</h6>
+                <small class="text-muted">Risk stratification</small>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4">
+            <div class="text-center">
+                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <span class="fw-bold">5</span>
+                </div>
+                <h6 class="fw-semibold">Clinical Report</h6>
+                <small class="text-muted">PDF generation</small>
+            </div>
+        </div>
+        
+        <div class="col-lg-2 col-md-4">
+            <div class="text-center">
+                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <span class="fw-bold">6</span>
+                </div>
+                <h6 class="fw-semibold">Follow-up</h6>
+                <small class="text-muted">History tracking</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- System Status Banner -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info d-flex align-items-center" role="alert">
+                <i class="bi bi-info-circle me-3" style="font-size: 1.5rem;"></i>
+                <div>
+                    <h6 class="alert-heading mb-1">System Status</h6>
+                    <p class="mb-0">
+                        <small>Application initialized successfully. Please log in to access clinical features.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}

@@ -1,0 +1,794 @@
+{% extends 'base.html' %}
+
+{% block title %}Patient History - GDM Predictor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 0;
+    }
+
+    .patient-header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .patient-info h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .patient-details {
+        display: flex;
+        gap: 2rem;
+        font-size: 0.95rem;
+        opacity: 0.9;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-header {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-header:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+    }
+
+    .timeline-section {
+        background: var(--white);
+        border-radius: 1rem;
+        box-shadow: var(--shadow-lg);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.875rem;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 1rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(180deg, var(--primary), var(--secondary));
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+        background: var(--gray-50);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        border: 1px solid var(--gray-200);
+        margin-left: 1rem;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -2.5rem;
+        top: 1.5rem;
+        width: 12px;
+        height: 12px;
+        background: var(--primary);
+        border-radius: 50%;
+        border: 3px solid var(--white);
+        box-shadow: 0 0 0 3px var(--primary);
+    }
+
+    .assessment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+    }
+
+    .assessment-info h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 0.25rem;
+    }
+
+    .assessment-date {
+        color: var(--gray-600);
+        font-size: 0.875rem;
+    }
+    .assessment-date {
+        color: var(--gray-600);
+        font-size: 0.875rem;
+    }
+
+    .risk-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .risk-low {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .risk-medium {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--warning);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .risk-high {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--error);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .assessment-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .detail-group {
+        background: var(--white);
+        padding: 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .detail-label {
+        font-size: 0.75rem;
+        color: var(--gray-600);
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+        color: var(--gray-800);
+        font-weight: 600;
+    }
+
+    .assessment-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .btn-small {
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .btn-view {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-compare {
+        background: var(--secondary);
+        color: white;
+    }
+
+    .btn-download {
+        background: var(--success);
+        color: white;
+    }
+
+    .btn-small:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--white);
+        border-radius: 1rem;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--gray-200);
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: var(--gray-600);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .trend-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .trend-up {
+        color: var(--error);
+    }
+
+    .trend-down {
+        color: var(--success);
+    }
+
+    .trend-stable {
+        color: var(--gray-500);
+    }
+
+    .comparison-section {
+        background: var(--white);
+        border-radius: 1rem;
+        box-shadow: var(--shadow-lg);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .comparison-chart {
+        height: 300px;
+        background: var(--gray-50);
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--gray-200);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .chart-placeholder {
+        text-align: center;
+        color: var(--gray-500);
+    }
+
+    .notes-section {
+        background: var(--white);
+        border-radius: 1rem;
+        box-shadow: var(--shadow-lg);
+        padding: 2rem;
+    }
+
+    .note-item {
+        background: var(--gray-50);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--primary);
+    }
+
+    .note-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .note-author {
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .note-date {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    .note-content {
+        color: var(--gray-700);
+        line-height: 1.6;
+    }
+
+    .add-note-btn {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .add-note-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    @media (max-width: 768px) {
+        .patient-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .patient-details {
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .header-actions {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .timeline {
+            padding-left: 1rem;
+        }
+
+        .timeline-item {
+            margin-left: 0.5rem;
+        }
+
+        .assessment-details {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <!-- Patient Header -->
+    <div class="patient-header">
+        <div class="patient-info">
+            <h1>Sarah Johnson - Patient History</h1>
+            <div class="patient-details">
+                <span><i class="fas fa-id-card"></i> ID: P001</span>
+                <span><i class="fas fa-calendar"></i> Age: 32 years</span>
+                <span><i class="fas fa-phone"></i> +254-712-345678</span>
+                <span><i class="fas fa-baby"></i> 24 weeks pregnant</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="#" class="btn-header" onclick="newAssessment()">
+                <i class="fas fa-plus"></i>
+                New Assessment
+            </a>
+            <a href="#" class="btn-header" onclick="generateReport()">
+                <i class="fas fa-file-pdf"></i>
+                Generate Report
+            </a>
+            <a href="{{ url_for('patient_management') }}" class="btn-header">
+                <i class="fas fa-arrow-left"></i>
+                Back to Patients
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Overview -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div class="stat-value">7</div>
+            <div class="stat-label">Total Assessments</div>
+            <div class="trend-indicator trend-up">
+                <i class="fas fa-arrow-up"></i>
+                2 this month
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stat-value">High</div>
+            <div class="stat-label">Current Risk Level</div>
+            <div class="trend-indicator trend-up">
+                <i class="fas fa-arrow-up"></i>
+                Increased from Medium
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-value">78%</div>
+            <div class="stat-label">Latest Probability</div>
+            <div class="trend-indicator trend-up">
+                <i class="fas fa-arrow-up"></i>
+                +15% from last
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-value">2</div>
+            <div class="stat-label">Days Since Last</div>
+            <div class="trend-indicator trend-stable">
+                <i class="fas fa-minus"></i>
+                Regular monitoring
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Trend Chart -->
+    <div class="comparison-section">
+        <div class="section-header">
+            <div class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-chart-area"></i>
+                </div>
+                Risk Trend Analysis
+            </div>
+            <button class="btn-small btn-view" onclick="exportChart()">
+                <i class="fas fa-download"></i>
+                Export Chart
+            </button>
+        </div>
+        <div class="comparison-chart">
+            <div class="chart-placeholder">
+                <i class="fas fa-chart-line" style="font-size: 3rem; color: var(--gray-400); margin-bottom: 1rem;"></i>
+                <p>Risk probability trend over time</p>
+                <p style="font-size: 0.875rem; color: var(--gray-400);">Chart will be rendered here</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assessment Timeline -->
+    <div class="timeline-section">
+        <div class="section-header">
+            <div class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-history"></i>
+                </div>
+                Assessment Timeline
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn-small btn-compare" onclick="compareSelected()">
+                    <i class="fas fa-balance-scale"></i>
+                    Compare Selected
+                </button>
+                <select style="padding: 0.5rem; border-radius: 0.5rem; border: 1px solid var(--gray-300);">
+                    <option>All Assessments</option>
+                    <option>Last 30 Days</option>
+                    <option>This Trimester</option>
+                    <option>High Risk Only</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="timeline">
+            <!-- Latest Assessment -->
+            <div class="timeline-item">
+                <div class="assessment-header">
+                    <div class="assessment-info">
+                        <h3>GDM Risk Assessment #7</h3>
+                        <div class="assessment-date">November 3, 2025 - 10:30 AM</div>
+                    </div>
+                    <div class="risk-badge risk-high">High Risk - 78%</div>
+                </div>
+                
+                <div class="assessment-details">
+                    <div class="detail-group">
+                        <div class="detail-label">Age</div>
+                        <div class="detail-value">32 years</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">BMI</div>
+                        <div class="detail-value">31.2 kg/m²</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Systolic BP</div>
+                        <div class="detail-value">135 mmHg</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Diastolic BP</div>
+                        <div class="detail-value">88 mmHg</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">HDL</div>
+                        <div class="detail-value">42 mg/dL</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Hemoglobin</div>
+                        <div class="detail-value">11.8 g/dL</div>
+                    </div>
+                </div>
+
+                <div class="assessment-actions">
+                    <input type="checkbox" id="assess7" style="margin-right: 0.5rem;">
+                    <label for="assess7" style="margin-right: 1rem; font-size: 0.875rem;">Select for comparison</label>
+                    <a href="#" class="btn-small btn-view">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                    <a href="#" class="btn-small btn-download">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                    <a href="#" class="btn-small btn-compare">
+                        <i class="fas fa-brain"></i> Explainability
+                    </a>
+                </div>
+            </div>
+
+            <!-- Previous Assessment -->
+            <div class="timeline-item">
+                <div class="assessment-header">
+                    <div class="assessment-info">
+                        <h3>GDM Risk Assessment #6</h3>
+                        <div class="assessment-date">October 28, 2025 - 2:15 PM</div>
+                    </div>
+                    <div class="risk-badge risk-medium">Medium Risk - 63%</div>
+                </div>
+                
+                <div class="assessment-details">
+                    <div class="detail-group">
+                        <div class="detail-label">Age</div>
+                        <div class="detail-value">32 years</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">BMI</div>
+                        <div class="detail-value">30.8 kg/m²</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Systolic BP</div>
+                        <div class="detail-value">128 mmHg</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Diastolic BP</div>
+                        <div class="detail-value">82 mmHg</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">HDL</div>
+                        <div class="detail-value">45 mg/dL</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Hemoglobin</div>
+                        <div class="detail-value">12.1 g/dL</div>
+                    </div>
+                </div>
+
+                <div class="assessment-actions">
+                    <input type="checkbox" id="assess6" style="margin-right: 0.5rem;">
+                    <label for="assess6" style="margin-right: 1rem; font-size: 0.875rem;">Select for comparison</label>
+                    <a href="#" class="btn-small btn-view">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                    <a href="#" class="btn-small btn-download">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                    <a href="#" class="btn-small btn-compare">
+                        <i class="fas fa-brain"></i> Explainability
+                    </a>
+                </div>
+            </div>
+
+            <!-- Earlier Assessment -->
+            <div class="timeline-item">
+                <div class="assessment-header">
+                    <div class="assessment-info">
+                        <h3>GDM Risk Assessment #5</h3>
+                        <div class="assessment-date">October 21, 2025 - 11:00 AM</div>
+                    </div>
+                    <div class="risk-badge risk-medium">Medium Risk - 58%</div>
+                </div>
+                
+                <div class="assessment-details">
+                    <div class="detail-group">
+                        <div class="detail-label">Age</div>
+                        <div class="detail-value">32 years</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">BMI</div>
+                        <div class="detail-value">30.5 kg/m²</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Systolic BP</div>
+                        <div class="detail-value">125 mmHg</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Diastolic BP</div>
+                        <div class="detail-value">78 mmHg</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">HDL</div>
+                        <div class="detail-value">48 mg/dL</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-label">Hemoglobin</div>
+                        <div class="detail-value">12.3 g/dL</div>
+                    </div>
+                </div>
+
+                <div class="assessment-actions">
+                    <input type="checkbox" id="assess5" style="margin-right: 0.5rem;">
+                    <label for="assess5" style="margin-right: 1rem; font-size: 0.875rem;">Select for comparison</label>
+                    <a href="#" class="btn-small btn-view">
+                        <i class="fas fa-eye"></i> View Details
+                    </a>
+                    <a href="#" class="btn-small btn-download">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                    <a href="#" class="btn-small btn-compare">
+                        <i class="fas fa-brain"></i> Explainability
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clinical Notes -->
+    <div class="notes-section">
+        <div class="section-header">
+            <div class="section-title">
+                <div class="section-icon">
+                    <i class="fas fa-sticky-note"></i>
+                </div>
+                Clinical Notes
+            </div>
+            <button class="add-note-btn" onclick="addNote()">
+                <i class="fas fa-plus"></i>
+                Add Note
+            </button>
+        </div>
+
+        <div class="note-item">
+            <div class="note-header">
+                <div class="note-author">Dr. Jane Smith</div>
+                <div class="note-date">November 3, 2025</div>
+            </div>
+            <div class="note-content">
+                Patient showing increasing risk factors. Blood pressure elevated compared to previous visits. Recommend dietary consultation and increased monitoring frequency. Consider glucose tolerance test.
+            </div>
+        </div>
+
+        <div class="note-item">
+            <div class="note-header">
+                <div class="note-author">Nurse Mary Williams</div>
+                <div class="note-date">October 28, 2025</div>
+            </div>
+            <div class="note-content">
+                Patient reports increased fatigue and frequent urination. Weight gain within normal range for gestational age. Vital signs stable.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Assessment actions
+    function newAssessment() {
+        window.location.href = "{{ url_for('input_page') }}?patient=P001";
+    }
+
+    function generateReport() {
+        showToast('Generating comprehensive patient report...', 'info');
+        // Implement report generation
+        setTimeout(() => {
+            showToast('Report generated successfully!', 'success');
+        }, 2000);
+    }
+
+    function exportChart() {
+        showToast('Exporting risk trend chart...', 'info');
+        // Implement chart export
+    }
+
+    function compareSelected() {
+        const selected = document.querySelectorAll('input[type="checkbox"]:checked');
+        if (selected.length < 2) {
+            showToast('Please select at least 2 assessments to compare', 'warning');
+            return;
+        }
+        showToast(`Comparing ${selected.length} assessments...`, 'info');
+        // Implement comparison logic
+    }
+
+    function addNote() {
+        const note = prompt('Enter clinical note:');
+        if (note && note.trim()) {
+            showToast('Clinical note added successfully', 'success');
+            // Add note to database and refresh
+        }
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        showToast('Patient history loaded', 'success');
+    });
+</script>
+{% endblock %}

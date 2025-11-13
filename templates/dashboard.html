@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - GDM Risk Prediction{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white border-0">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-1">Welcome back, {{ user.name }}!</h2>
+                            <p class="mb-0 opacity-75">
+                                {{ user.role.title() }} Dashboard - GDM Risk Prediction System
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <i class="bi bi-speedometer2" style="font-size: 3rem; opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="mb-3">Quick Actions</h4>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="bi bi-person-plus text-success" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <h6 class="card-title">Create Patient</h6>
+                            <p class="card-text text-muted small">Register new patient for assessment</p>
+                            <a href="#" class="btn btn-outline-success btn-sm disabled">
+                                Coming Soon
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="bi bi-clipboard-pulse text-primary" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <h6 class="card-title">New Assessment</h6>
+                            <p class="card-text text-muted small">Perform GDM risk prediction</p>
+                            <a href="#" class="btn btn-outline-primary btn-sm disabled">
+                                Coming Soon
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="bi bi-people text-info" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <h6 class="card-title">View Patients</h6>
+                            <p class="card-text text-muted small">Browse patient database</p>
+                            <a href="#" class="btn btn-outline-info btn-sm disabled">
+                                Coming Soon
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if user.is_admin %}
+                <div class="col-md-3">
+                    <div class="card h-100 border-0 shadow-sm border-warning">
+                        <div class="card-body text-center">
+                            <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="bi bi-person-gear text-warning" style="font-size: 1.5rem;"></i>
+                            </div>
+                            <h6 class="card-title">Register User</h6>
+                            <p class="card-text text-muted small">Add new system users</p>
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-outline-warning btn-sm">
+                                Admin Only
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="mb-3">System Overview</h4>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body text-center">
+                            <div class="display-6 text-primary fw-bold">0</div>
+                            <div class="text-muted">Total Patients</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body text-center">
+                            <div class="display-6 text-success fw-bold">0</div>
+                            <div class="text-muted">Assessments Today</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body text-center">
+                            <div class="display-6 text-info fw-bold">0</div>
+                            <div class="text-muted">Reports Generated</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="card bg-light border-0">
+                        <div class="card-body text-center">
+                            <div class="display-6 text-warning fw-bold">{{ user.role.title() }}</div>
+                            <div class="text-muted">Your Role</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-5">
+                        <i class="bi bi-clock-history text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-3 mb-0">No recent activity</p>
+                        <small class="text-muted">Patient assessments and reports will appear here</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">System Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Database</span>
+                        <span class="badge bg-success">Online</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>ML Models</span>
+                        <span class="badge bg-warning text-dark">Not Loaded</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Authentication</span>
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>CSRF Protection</span>
+                        <span class="badge bg-success">Enabled</span>
+                    </div>
+                </div>
+            </div>
+            
+            {% if user.is_admin %}
+            <div class="alert alert-info mt-3" role="alert">
+                <h6 class="alert-heading">
+                    <i class="bi bi-lightbulb me-1"></i>
+                    Admin Tip
+                </h6>
+                <small>
+                    You can register new users through the "Register User" action above. 
+                    All user activities are logged for security auditing.
+                </small>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

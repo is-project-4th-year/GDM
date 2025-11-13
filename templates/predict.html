@@ -1,0 +1,669 @@
+{% extends 'base.html' %}
+
+{% block title %}Prediction Results - GDM Predictor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .results-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 0;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .results-card {
+        background: var(--white);
+        border-radius: 1.5rem;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .results-header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .results-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: shimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(180deg); }
+    }
+
+    .results-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2rem;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .results-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .results-subtitle {
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+
+    .results-body {
+        padding: 2.5rem;
+    }
+
+    .prediction-result {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .prediction-label {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .prediction-positive {
+        color: var(--error);
+    }
+
+    .prediction-negative {
+        color: var(--success);
+    }
+
+    .prediction-probability {
+        font-size: 1.25rem;
+        color: var(--gray-600);
+        margin-bottom: 1rem;
+    }
+
+    .risk-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .risk-low {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success);
+        border: 2px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .risk-medium {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--warning);
+        border: 2px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .risk-high {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--error);
+        border: 2px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .probability-chart {
+        background: var(--gray-50);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .probability-bar {
+        background: var(--gray-200);
+        border-radius: 1rem;
+        height: 2rem;
+        overflow: hidden;
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .probability-fill {
+        height: 100%;
+        border-radius: 1rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        transition: width 2s ease-in-out;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .probability-fill::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: progress-shine 2s ease-in-out infinite;
+    }
+
+    @keyframes progress-shine {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+
+    .probability-text {
+        text-align: center;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--gray-700);
+    }
+
+    .recommendations {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(6, 182, 212, 0.05));
+        border-radius: 1rem;
+        padding: 2rem;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        margin-bottom: 2rem;
+    }
+
+    .recommendations-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .recommendations-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.875rem;
+    }
+
+    .recommendation-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .recommendation-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: var(--white);
+        border-radius: 0.75rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .recommendation-icon {
+        width: 24px;
+        height: 24px;
+        background: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.75rem;
+        flex-shrink: 0;
+        margin-top: 0.125rem;
+    }
+
+    .recommendation-text {
+        color: var(--gray-700);
+        line-height: 1.6;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary {
+        background: var(--white);
+        color: var(--gray-700);
+        border: 2px solid var(--gray-300);
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-1px);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, var(--success), #059669);
+        color: white;
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .disclaimer {
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .disclaimer-title {
+        font-weight: 600;
+        color: var(--warning);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .disclaimer-text {
+        color: #92400e;
+        font-size: 0.875rem;
+        line-height: 1.6;
+    }
+
+    .input-summary {
+        background: var(--gray-50);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--gray-200);
+    }
+
+    .summary-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 1rem;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .summary-label {
+        font-weight: 500;
+        color: var(--gray-600);
+    }
+
+    .summary-value {
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    @media (max-width: 768px) {
+        .results-container {
+            padding: 1rem;
+        }
+
+        .results-body {
+            padding: 1.5rem;
+        }
+
+        .prediction-label {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="results-container">
+    <div class="page-header">
+        <h1 class="page-title">Prediction Results</h1>
+    </div>
+
+    {% if result %}
+    <div class="results-card">
+        <div class="results-header">
+            <div class="results-icon">
+                {% if result.prediction == 1 %}
+                <i class="fas fa-exclamation-triangle"></i>
+                {% else %}
+                <i class="fas fa-check-circle"></i>
+                {% endif %}
+            </div>
+            <h2 class="results-title">GDM Risk Assessment Complete</h2>
+            <p class="results-subtitle">Analysis based on provided health parameters</p>
+        </div>
+
+        <div class="results-body">
+            <div class="prediction-result">
+                <div class="prediction-label {% if result.prediction == 1 %}prediction-positive{% else %}prediction-negative{% endif %}">
+                    {% if result.prediction == 1 %}
+                    <i class="fas fa-exclamation-triangle"></i>
+                    GDM Risk Detected
+                    {% else %}
+                    <i class="fas fa-check-circle"></i>
+                    Low GDM Risk
+                    {% endif %}
+                </div>
+
+                <div class="prediction-probability">
+                    Probability: {{ "%.1f"|format(result.probability * 100) }}%
+                </div>
+
+                <div class="risk-indicator risk-{{ result.risk_category.lower() }}">
+                    <i class="fas fa-{{ 'exclamation-triangle' if result.risk_category == 'High' else 'exclamation' if result.risk_category == 'Medium' else 'check' }}"></i>
+                    {{ result.risk_category }} Risk Level
+                </div>
+            </div>
+
+            <div class="probability-chart">
+                <h3 class="chart-title">Risk Probability</h3>
+                <div class="probability-bar">
+                    <div class="probability-fill" style="width: {{ result.probability * 100 }}%"></div>
+                </div>
+                <div class="probability-text">{{ "%.1f"|format(result.probability * 100) }}% probability of GDM</div>
+            </div>
+
+            <div class="recommendations">
+                <h3 class="recommendations-title">
+                    <div class="recommendations-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    Clinical Recommendations
+                </h3>
+                <ul class="recommendation-list">
+                    {% if result.prediction == 1 %}
+                    <li class="recommendation-item">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div class="recommendation-text">
+                            <strong>Immediate Healthcare Consultation:</strong> Schedule an appointment with an obstetrician or endocrinologist for comprehensive GDM evaluation and management plan.
+                        </div>
+                    </li>
+                    <li class="recommendation-item">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-vial"></i>
+                        </div>
+                        <div class="recommendation-text">
+                            <strong>Glucose Tolerance Testing:</strong> Conduct oral glucose tolerance test (OGTT) to confirm diagnosis and assess glucose metabolism.
+                        </div>
+                    </li>
+                    <li class="recommendation-item">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <div class="recommendation-text">
+                            <strong>Nutritional Counseling:</strong> Consult with a registered dietitian for personalized meal planning and carbohydrate management.
+                        </div>
+                    </li>
+                    <li class="recommendation-item">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="recommendation-text">
+                            <strong>Blood Glucose Monitoring:</strong> Implement regular self-monitoring of blood glucose levels as directed by healthcare provider.
+                        </div>
+                    </li>
+                    {% else %}
+                    <li class="recommendation-item">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="recommendation-text">
+                            <strong>Regular Prenatal Care:</strong> Continue routine prenatal appointments and maintain recommended screening schedules.
+                        </div>
+                    </li>
+                    <li class="recommendation-item">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-apple-alt"></i>
+                        </div>
+                        <div class="recommendation-text">
+                            <strong>Healthy Lifestyle:</strong> Maintain balanced nutrition and appropriate physical activity as recommended by healthcare provider.
+                        </div>
+                    </li>
+                    <li class="recommendation-item">
+                        <div class="recommendation-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="recommendation-text">
+                            <strong>Continued Monitoring:</strong> Stay vigilant for GDM symptoms and discuss any concerns with healthcare provider.
+                        </div>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            {% if result.input_data %}
+            <div class="input-summary">
+                <h3 class="summary-title">Input Parameters Summary</h3>
+                <div class="summary-grid">
+                    {% for key, value in result.input_data.items() %}
+                    <div class="summary-item">
+                        <span class="summary-label">{{ key }}:</span>
+                        <span class="summary-value">
+                            {% if value is none %}
+                            N/A
+                            {% elif key in ['Family History', 'PCOS', 'Prediabetes', 'Sedentary Lifestyle'] %}
+                            {{ 'Yes' if value else 'No' }}
+                            {% else %}
+                            {{ value }}
+                            {% if key == 'Age' %} years
+                            {% elif key == 'BMI' %} kg/m²
+                            {% elif key in ['Sys BP', 'Dia BP'] %} mmHg
+                            {% elif key == 'HDL' %} mg/dL
+                            {% elif key == 'Hemoglobin' %} g/dL
+                            {% endif %}
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="action-buttons">
+                <a href="{{ url_for('input_page') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    New Prediction
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-chart-bar"></i>
+                    View Dashboard
+                </a>
+                <button onclick="window.print()" class="btn btn-success">
+                    <i class="fas fa-print"></i>
+                    Print Results
+                </button>
+            </div>
+
+            <div class="disclaimer">
+                <div class="disclaimer-title">
+                    <i class="fas fa-info-circle"></i>
+                    Important Medical Disclaimer
+                </div>
+                <div class="disclaimer-text">
+                    This prediction is generated by an AI model and should not replace professional medical advice, diagnosis, or treatment. 
+                    Always consult with qualified healthcare professionals for medical decisions. The accuracy of predictions depends on the 
+                    quality and completeness of input data. This tool is intended to assist healthcare providers and should be used in 
+                    conjunction with clinical judgment and standard medical practices.
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="results-card">
+        <div class="results-body">
+            <div style="text-align: center; padding: 3rem;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--warning); margin-bottom: 1rem;"></i>
+                <h2 style="color: var(--gray-800); margin-bottom: 1rem;">No Results Available</h2>
+                <p style="color: var(--gray-600); margin-bottom: 2rem;">Please complete the patient assessment form to generate predictions.</p>
+                <a href="{{ url_for('input_page') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i>
+                    Go to Assessment
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Animate probability bar on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const probabilityFill = document.querySelector('.probability-fill');
+        if (probabilityFill) {
+            const finalWidth = probabilityFill.style.width;
+            probabilityFill.style.width = '0%';
+            setTimeout(() => {
+                probabilityFill.style.width = finalWidth;
+            }, 500);
+        }
+    });
+
+    // Print functionality
+    window.addEventListener('beforeprint', function() {
+        document.body.classList.add('printing');
+    });
+
+    window.addEventListener('afterprint', function() {
+        document.body.classList.remove('printing');
+    });
+
+    // Show success toast after results generation
+    {% if result %}
+    setTimeout(() => {
+        showToast('Prediction completed successfully', 'success');
+    }, 1000);
+    {% endif %}
+</script>
+
+<style>
+    @media print {
+        .navbar, .footer, .action-buttons {
+            display: none !important;
+        }
+        
+        .results-container {
+            max-width: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .results-card {
+            box-shadow: none;
+            border: 1px solid #ccc;
+        }
+        
+        .probability-fill::before {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}

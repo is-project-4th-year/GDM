@@ -1,0 +1,733 @@
+{% extends 'base.html' %}
+
+{% block title %}Patient Data Input - GDM Predictor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .input-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem 0;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .page-subtitle {
+        font-size: 1.125rem;
+        color: var(--gray-600);
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    .form-container {
+        background: var(--white);
+        border-radius: 1.5rem;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        overflow: hidden;
+    }
+
+    .form-header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .form-header h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-header p {
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+
+    .form-body {
+        padding: 2.5rem;
+    }
+
+    .form-section {
+        margin-bottom: 2.5rem;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--gray-100);
+    }
+
+    .section-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.875rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        position: relative;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        font-size: 0.875rem;
+    }
+
+    .form-input, .form-select {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid var(--gray-200);
+        border-radius: 0.75rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: var(--white);
+    }
+
+    .form-input:focus, .form-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .form-select {
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.75rem center;
+        background-repeat: no-repeat;
+        background-size: 1.25rem;
+        padding-right: 2.5rem;
+        appearance: none;
+    }
+
+    .input-hint {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .input-unit {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-500);
+        font-size: 0.875rem;
+        font-weight: 500;
+        pointer-events: none;
+        margin-top: 1rem;
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: var(--gray-50);
+        border-radius: 0.75rem;
+        border: 2px solid var(--gray-200);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .checkbox-group:hover {
+        border-color: var(--primary);
+        background: rgba(99, 102, 241, 0.05);
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--primary);
+        cursor: pointer;
+    }
+
+    .checkbox-label {
+        font-weight: 500;
+        color: var(--gray-700);
+        cursor: pointer;
+        flex: 1;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2.5rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    .btn {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary {
+        background: var(--white);
+        color: var(--gray-700);
+        border: 2px solid var(--gray-300);
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-1px);
+    }
+
+    .error-message {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: var(--error);
+        padding: 1rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .progress-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .progress-step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+    }
+
+    .progress-step::before {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        right: -50%;
+        height: 2px;
+        background: var(--gray-200);
+        z-index: 1;
+    }
+
+    .progress-step:last-child::before {
+        display: none;
+    }
+
+    .progress-step.active::before {
+        background: var(--primary);
+    }
+
+    .step-circle {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--gray-200);
+        color: var(--gray-500);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        position: relative;
+        z-index: 2;
+    }
+
+    .progress-step.active .step-circle {
+        background: var(--primary);
+        color: white;
+    }
+
+    .step-label {
+        font-size: 0.75rem;
+        color: var(--gray-600);
+        font-weight: 500;
+    }
+
+    .progress-step.active .step-label {
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .form-container {
+            margin: 1rem;
+        }
+
+        .form-body {
+            padding: 1.5rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .page-title {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="input-container">
+    <div class="page-header">
+        <h1 class="page-title">Patient Assessment</h1>
+        <p class="page-subtitle">
+            Enter patient health parameters for gestational diabetes mellitus risk prediction. 
+            All information is processed securely using advanced machine learning algorithms.
+        </p>
+    </div>
+
+    {% if error %}
+    <div class="error-message">
+        <i class="fas fa-exclamation-triangle"></i>
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="form-container">
+        <div class="form-header">
+            <h2>Health Parameters Input</h2>
+            <p>Please provide accurate patient information for optimal prediction results</p>
+        </div>
+
+        <div class="form-body">
+            <div class="progress-indicator">
+                <div class="progress-step active">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Basic Info</div>
+                </div>
+                <div class="progress-step active">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Vitals</div>
+                </div>
+                <div class="progress-step active">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">History</div>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle">4</div>
+                    <div class="step-label">Results</div>
+                </div>
+            </div>
+
+            <form method="POST" id="prediction-form">
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <div class="section-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        Basic Information
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="Age" class="form-label">Age</label>
+                            <input 
+                                type="number" 
+                                id="Age" 
+                                name="Age" 
+                                class="form-input" 
+                                value="{{ defaults.Age }}"
+                                min="10" 
+                                max="100" 
+                                step="1"
+                                required
+                            >
+                            <div class="input-unit">years</div>
+                            <div class="input-hint">
+                                <i class="fas fa-info-circle"></i>
+                                Patient's current age
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="BMI" class="form-label">Body Mass Index (BMI)</label>
+                            <input 
+                                type="number" 
+                                id="BMI" 
+                                name="BMI" 
+                                class="form-input" 
+                                value="{{ defaults.BMI }}"
+                                min="10" 
+                                max="60" 
+                                step="0.1"
+                                required
+                            >
+                            <div class="input-unit">kg/m²</div>
+                            <div class="input-hint">
+                                <i class="fas fa-info-circle"></i>
+                                Normal range: 18.5-24.9
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <div class="section-icon">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        Vital Signs
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="Sys BP" class="form-label">Systolic Blood Pressure</label>
+                            <input 
+                                type="number" 
+                                id="Sys BP" 
+                                name="Sys BP" 
+                                class="form-input" 
+                                value="{{ defaults['Sys BP'] }}"
+                                min="70" 
+                                max="250" 
+                                step="1"
+                                required
+                            >
+                            <div class="input-unit">mmHg</div>
+                            <div class="input-hint">
+                                <i class="fas fa-info-circle"></i>
+                                Normal: &lt;120 mmHg
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Dia BP" class="form-label">Diastolic Blood Pressure</label>
+                            <input 
+                                type="number" 
+                                id="Dia BP" 
+                                name="Dia BP" 
+                                class="form-input" 
+                                value="{{ defaults['Dia BP'] }}"
+                                min="40" 
+                                max="150" 
+                                step="1"
+                                required
+                            >
+                            <div class="input-unit">mmHg</div>
+                            <div class="input-hint">
+                                <i class="fas fa-info-circle"></i>
+                                Normal: &lt;80 mmHg
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <div class="section-icon">
+                            <i class="fas fa-flask"></i>
+                        </div>
+                        Laboratory Values
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="HDL" class="form-label">HDL Cholesterol</label>
+                            <input 
+                                type="number" 
+                                id="HDL" 
+                                name="HDL" 
+                                class="form-input" 
+                                value="{{ defaults.HDL }}"
+                                min="10" 
+                                max="150" 
+                                step="0.1"
+                                required
+                            >
+                            <div class="input-unit">mg/dL</div>
+                            <div class="input-hint">
+                                <i class="fas fa-info-circle"></i>
+                                Normal: &gt;40 mg/dL
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Hemoglobin" class="form-label">Hemoglobin Level</label>
+                            <input 
+                                type="number" 
+                                id="Hemoglobin" 
+                                name="Hemoglobin" 
+                                class="form-input" 
+                                value="{{ defaults.Hemoglobin }}"
+                                min="5" 
+                                max="20" 
+                                step="0.1"
+                                required
+                            >
+                            <div class="input-unit">g/dL</div>
+                            <div class="input-hint">
+                                <i class="fas fa-info-circle"></i>
+                                Normal: 12.0-16.0 g/dL
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <div class="section-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        Medical History
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Family History of Diabetes</label>
+                            <div class="checkbox-group">
+                                <input 
+                                    type="checkbox" 
+                                    id="Family History" 
+                                    name="Family History" 
+                                    value="1"
+                                    {% if defaults['Family History'] %}checked{% endif %}
+                                >
+                                <label for="Family History" class="checkbox-label">
+                                    Yes, family history of diabetes present
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Polycystic Ovary Syndrome (PCOS)</label>
+                            <div class="checkbox-group">
+                                <input 
+                                    type="checkbox" 
+                                    id="PCOS" 
+                                    name="PCOS" 
+                                    value="1"
+                                    {% if defaults.PCOS %}checked{% endif %}
+                                >
+                                <label for="PCOS" class="checkbox-label">
+                                    Yes, diagnosed with PCOS
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Prediabetes History</label>
+                            <div class="checkbox-group">
+                                <input 
+                                    type="checkbox" 
+                                    id="Prediabetes" 
+                                    name="Prediabetes" 
+                                    value="1"
+                                    {% if defaults.Prediabetes %}checked{% endif %}
+                                >
+                                <label for="Prediabetes" class="checkbox-label">
+                                    Yes, history of prediabetes
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Sedentary Lifestyle</label>
+                            <div class="checkbox-group">
+                                <input 
+                                    type="checkbox" 
+                                    id="Sedentary Lifestyle" 
+                                    name="Sedentary Lifestyle" 
+                                    value="1"
+                                    {% if defaults['Sedentary Lifestyle'] %}checked{% endif %}
+                                >
+                                <label for="Sedentary Lifestyle" class="checkbox-label">
+                                    Yes, primarily sedentary lifestyle
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                        <i class="fas fa-undo"></i>
+                        Reset Form
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">
+                        <i class="fas fa-calculator"></i>
+                        Generate Prediction
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation and submission
+    document.getElementById('prediction-form').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        submitBtn.disabled = true;
+    });
+
+    // Reset form function
+    function resetForm() {
+        if (confirm('Are you sure you want to reset all fields?')) {
+            document.getElementById('prediction-form').reset();
+            showToast('Form has been reset', 'info');
+        }
+    }
+
+    // Real-time validation
+    document.querySelectorAll('.form-input').forEach(input => {
+        input.addEventListener('input', function() {
+            validateField(this);
+        });
+    });
+
+    function validateField(field) {
+        const value = parseFloat(field.value);
+        const min = parseFloat(field.min);
+        const max = parseFloat(field.max);
+        
+        if (field.value && (value < min || value > max)) {
+            field.style.borderColor = 'var(--error)';
+            field.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.1)';
+        } else {
+            field.style.borderColor = 'var(--gray-200)';
+            field.style.boxShadow = 'none';
+        }
+    }
+
+    // Checkbox styling updates
+    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const group = this.closest('.checkbox-group');
+            if (this.checked) {
+                group.style.borderColor = 'var(--primary)';
+                group.style.background = 'rgba(99, 102, 241, 0.1)';
+            } else {
+                group.style.borderColor = 'var(--gray-200)';
+                group.style.background = 'var(--gray-50)';
+            }
+        });
+    });
+
+    // Auto-calculate BMI helper (if needed)
+    function calculateBMI(weight, height) {
+        return (weight / (height * height)).toFixed(1);
+    }
+
+    // Form progress animation
+    document.querySelectorAll('.form-input, input[type="checkbox"]').forEach(input => {
+        input.addEventListener('change', updateProgress);
+    });
+
+    function updateProgress() {
+        const totalFields = document.querySelectorAll('.form-input[required], input[type="checkbox"]').length;
+        const filledFields = document.querySelectorAll('.form-input[required]:valid, input[type="checkbox"]:checked').length;
+        const progress = (filledFields / totalFields) * 100;
+        
+        // Update progress steps visual indicator
+        const steps = document.querySelectorAll('.progress-step');
+        const activeSteps = Math.ceil((progress / 100) * steps.length);
+        
+        steps.forEach((step, index) => {
+            if (index < activeSteps) {
+                step.classList.add('active');
+            } else {
+                step.classList.remove('active');
+            }
+        });
+    }
+
+    // Initialize progress on page load
+    updateProgress();
+
+    // Smooth scroll to errors
+    if (document.querySelector('.error-message')) {
+        document.querySelector('.error-message').scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+        });
+    }
+
+    // Enhanced form interactivity
+    document.querySelectorAll('.form-group').forEach(group => {
+        const input = group.querySelector('input');
+        if (input) {
+            input.addEventListener('focus', () => {
+                group.style.transform = 'translateY(-2px)';
+                group.style.transition = 'transform 0.2s ease';
+            });
+            
+            input.addEventListener('blur', () => {
+                group.style.transform = 'translateY(0)';
+            });
+        }
+    });
+</script>
+{% endblock %}
