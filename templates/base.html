@@ -44,7 +44,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link disabled" href="#">
+                            <a class="nav-link{{ ' active' if request.blueprint == 'patients' }}" href="{{ url_for('patients.list_patients') }}">
                                 <i class="bi bi-people me-1"></i>Patients
                             </a>
                         </li>

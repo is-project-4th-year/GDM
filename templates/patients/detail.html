@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+
+{% block title %}{{ patient.full_name }} - Patient Details{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    
+    <!-- Patient Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex align-items-start">
+                <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                    <i class="bi bi-person text-primary" style="font-size: 1.5rem;"></i>
+                </div>
+                <div>
+                    <h2 class="mb-1">{{ patient.full_name }}</h2>
+                    <div class="text-muted">
+                        <i class="bi bi-calendar me-1"></i>{{ patient.age }} years old
+                        {% if patient.gestational_age_weeks %}
+                            <span class="ms-3">
+                                <i class="bi bi-heart-pulse me-1"></i>{{ patient.gestational_age_weeks }} weeks pregnant
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="mt-2">
+                        <span class="badge bg-light text-dark">
+                            <i class="bi bi-hash me-1"></i>{{ patient.uuid }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 text-end">
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('patients.edit_patient', patient_id=patient.id) }}" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil me-1"></i>Edit
+                </a>
+                <a href="{{ url_for('patients.add_clinical_metrics', patient_id=patient.id) }}" class="btn btn-success">
+                    <i class="bi bi-plus-circle me-1"></i>Add Metrics
+                </a>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="bi bi-three-dots"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('patients.patient_history', patient_id=patient.id) }}">
+                            <i class="bi bi-clock-history me-2"></i>View History
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="window.print()">
+                            <i class="bi bi-printer me-2"></i>Print Profile
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Patient Information Cards -->
+    <div class="row g-4 mb-4">
+        
+        <!-- Basic Information -->
+        <div class="col-lg-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0">
+                        <i class="bi bi-person-lines-fill me-2 text-primary"></i>
+                        Basic Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Full Name:</dt>
+                        <dd class="col-sm-8">{{ patient.full_name }}</dd>
+                        
+                        <dt class="col-sm-4">Date of Birth:</dt>
+                        <dd class="col-sm-8">{{ patient.date_of_birth.strftime('%B %d, %Y') }}</dd>
+                        
+                        <dt class="col-sm-4">Age:</dt>
+                        <dd class="col-sm-8">{{ patient.age }} years</dd>
+                        
+                        {% if patient.national_id %}
+                        <dt class="col-sm-4">National ID:</dt>
+                        <dd class="col-sm-8">{{ patient.national_id }}</dd>
+                        {% endif %}
+                        
+                        {% if patient.phone %}
+                        <dt class="col-sm-4">Phone:</dt>
+                        <dd class="col-sm-8">
+                            <i class="bi bi-telephone me-1 text-muted"></i>
+                            {{ patient.phone }}
+                        </dd>
+                        {% endif %}
+                        
+                        <dt class="col-sm-4">Created:</dt>
+                        <dd class="col-sm-8">
+                            {{ patient.created_at.strftime('%B %d, %Y') }}
+                            <br><small class="text-muted">by {{ patient.creator.name }}</small>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pregnancy Information -->
+        <div class="col-lg-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0">
+                        <i class="bi bi-heart-pulse me-2 text-danger"></i>
+                        Pregnancy Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-5">Current Pregnancy:</dt>
+                        <dd class="col-sm-7">
+                            {% if patient.gestational_age_weeks %}
+                                <span class="badge bg-info bg-opacity-75 text-dark">
+                                    {{ patient.gestational_age_weeks }} weeks
+                                </span>
+                            {% else %}
+                                <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-5">Previous Pregnancies:</dt>
+                        <dd class="col-sm-7">
+                            {% if patient.parity is not none %}
+                                {{ patient.parity }}
+                            {% else %}
+                                <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-5">Total Assessments:</dt>
+                        <dd class="col-sm-7">
+                            <span class="fw-semibold">{{ patient.assessment_count }}</span>
+                        </dd>
+                    </dl>
+                    
+                    {% if latest_assessment %}
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <h6 class="mb-2">Latest Risk Assessment</h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-{{ latest_assessment.risk_color }} fs-6">
+                                {{ latest_assessment.risk_label }}
+                            </span>
+                            <small class="text-muted">
+                                {{ latest_assessment.created_at.strftime('%b %d, %Y') }}
+                            </small>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">Risk Score: {{ latest_assessment.risk_percentage }}%</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Clinical Summary -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="bi bi-clipboard-data me-2"></i>
+                            Latest Clinical Metrics
+                        </h6>
+                        {% if latest_metrics %}
+                        <small class="opacity-75">
+                            {{ latest_metrics.visit_date.strftime('%B %d, %Y') }}
+                        </small>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {% if latest_metrics %}
+                    <div class="row g-4">
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 mb-1 text-primary">
+                                    {% if latest_metrics.bmi %}
+                                        {{ latest_metrics.bmi }}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </div>
+                                <div class="small text-muted">BMI</div>
+                                {% if latest_metrics.bmi %}
+                                <div class="small text-info">{{ latest_metrics.bmi_category }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 mb-1 text-primary">
+                                    {% if latest_metrics.systolic_bp and latest_metrics.diastolic_bp %}
+                                        {{ latest_metrics.systolic_bp }}/{{ latest_metrics.diastolic_bp }}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </div>
+                                <div class="small text-muted">Blood Pressure</div>
+                                {% if latest_metrics.systolic_bp and latest_metrics.diastolic_bp %}
+                                <div class="small text-info">{{ latest_metrics.blood_pressure_category }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 mb-1 text-primary">
+                                    {% if latest_metrics.hemoglobin %}
+                                        {{ latest_metrics.hemoglobin }}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </div>
+                                <div class="small text-muted">Hemoglobin (g/dL)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <div class="h4 mb-1 text-primary">{{ latest_metrics.risk_factor_count }}</div>
+                                <div class="small text-muted">Risk Factors</div>
+                                <div class="small text-info">Identified</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Risk Factors Summary -->
+                    {% if latest_metrics.risk_factor_count > 0 %}
+                    <div class="mt-4">
+                        <h6 class="mb-2">Identified Risk Factors:</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if latest_metrics.family_history_diabetes %}
+                                <span class="badge bg-warning text-dark">Family History of Diabetes</span>
+                            {% endif %}
+                            {% if latest_metrics.sedentary_lifestyle %}
+                                <span class="badge bg-warning text-dark">Sedentary Lifestyle</span>
+                            {% endif %}
+                            {% if latest_metrics.prediabetes_history %}
+                                <span class="badge bg-warning text-dark">Prediabetes History</span>
+                            {% endif %}
+                            {% if latest_metrics.pcos_history %}
+                                <span class="badge bg-warning text-dark">PCOS History</span>
+                            {% endif %}
+                            {% if latest_metrics.previous_gdm %}
+                                <span class="badge bg-danger">Previous GDM</span>
+                            {% endif %}
+                            {% if latest_metrics.previous_macrosomia %}
+                                <span class="badge bg-warning text-dark">Previous Macrosomia</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-clipboard-x text-muted mb-3" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted mb-3">No Clinical Metrics Yet</h5>
+                        <p class="text-muted mb-4">
+                            Add clinical measurements to enable risk assessments for this patient.
+                        </p>
+                        <a href="{{ url_for('patients.add_clinical_metrics', patient_id=patient.id) }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Add Clinical Metrics
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="row g-4">
+        
+        <!-- Recent Assessments -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0">
+                        <i class="bi bi-graph-up me-2 text-success"></i>
+                        Recent Assessments
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_assessments %}
+                        {% for assessment in recent_assessments %}
+                        <div class="d-flex justify-content-between align-items-center {% if not loop.last %}border-bottom{% endif %} py-2">
+                            <div>
+                                <span class="badge bg-{{ assessment.risk_color }}">
+                                    {{ assessment.risk_label }}
+                                </span>
+                                <small class="text-muted ms-2">{{ assessment.risk_percentage }}%</small>
+                            </div>
+                            <small class="text-muted">
+                                {{ assessment.created_at.strftime('%b %d') }}
+                            </small>
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="mt-3">
+                            <a href="{{ url_for('patients.patient_history', patient_id=patient.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-clock-history me-1"></i>View All History
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="bi bi-graph-up text-muted mb-2" style="font-size: 2rem;"></i>
+                            <p class="text-muted mb-0">No assessments yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Clinical Metrics -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0">
+                        <i class="bi bi-clipboard-pulse me-2 text-info"></i>
+                        Recent Clinical Visits
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if recent_metrics %}
+                        {% for metrics in recent_metrics %}
+                        <div class="d-flex justify-content-between align-items-center {% if not loop.last %}border-bottom{% endif %} py-2">
+                            <div>
+                                <div class="fw-semibold">{{ metrics.visit_date.strftime('%B %d, %Y') }}</div>
+                                <small class="text-muted">
+                                    {% if metrics.bmi %}BMI: {{ metrics.bmi }}{% endif %}
+                                    {% if metrics.systolic_bp %} | BP: {{ metrics.systolic_bp }}/{{ metrics.diastolic_bp }}{% endif %}
+                                </small>
+                            </div>
+                            <small class="text-muted">
+                                {{ metrics.risk_factor_count }} risk factors
+                            </small>
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="mt-3">
+                            <a href="{{ url_for('patients.add_clinical_metrics', patient_id=patient.id) }}" class="btn btn-sm btn-outline-success">
+                                <i class="bi bi-plus-circle me-1"></i>Add New Metrics
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="bi bi-clipboard-pulse text-muted mb-2" style="font-size: 2rem;"></i>
+                            <p class="text-muted mb-0">No clinical data yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Add interactivity to metric cards
+document.addEventListener('DOMContentLoaded', function() {
+    const metricCards = document.querySelectorAll('.bg-light.rounded');
+    metricCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.transition = 'transform 0.2s ease-in-out';
+            this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+        });
+    });
+});
+</script>
+{% endblock %}
