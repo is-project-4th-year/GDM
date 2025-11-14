@@ -45,14 +45,20 @@ def create_app(config_name=None):
         from app.models.user import User
         return User.query.get(int(user_id))
     
+    # Initialize ML service
+    from app.ml.service import init_ml_service
+    init_ml_service(app)
+    
     # Register blueprints
     from app.routes.core import core_bp
     from app.routes.auth import auth_bp
     from app.routes.patients import patients_bp
+    from app.routes.risk import risk_bp
     
     app.register_blueprint(core_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(patients_bp)
+    app.register_blueprint(risk_bp)
     
     # Register CLI commands
     from cli_commands import register_cli_commands

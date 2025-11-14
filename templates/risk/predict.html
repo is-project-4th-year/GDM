@@ -1,0 +1,549 @@
+{% extends "base.html" %}
+
+{% block title %}Risk Assessment - {{ patient.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-1">
+                <i class="bi bi-clipboard-pulse me-2 text-primary"></i>
+                GDM Risk Assessment
+            </h2>
+            <p class="text-muted mb-2">
+                Patient: <strong>{{ patient.full_name }}</strong> ({{ patient.age }} years old)
+            </p>
+            {% if patient.gestational_age_weeks %}
+            <span class="badge bg-info bg-opacity-75 text-dark">
+                {{ patient.gestational_age_weeks }} weeks pregnant
+            </span>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('patients.detail_patient', patient_id=patient.id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back to Patient
+            </a>
+        </div>
+    </div>
+    
+    <!-- ML Service Status -->
+    {% if not ml_status.is_available %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-warning d-flex align-items-center" role="alert">
+                <i class="bi bi-exclamation-triangle me-3" style="font-size: 1.5rem;"></i>
+                <div>                    
+                    <h6 class="alert-heading mb-1">ML Service Not Available</h6>
+                    <p class="mb-0">
+                        The machine learning service is currently unavailable for predictions.
+                        {% if ml_status.load_error %}
+                        <br><small class="text-muted">Error: {{ ml_status.load_error }}</small>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info d-flex align-items-center" role="alert">
+                <i class="bi bi-info-circle me-3"></i>
+                <div>
+                    <strong>ML Service Ready</strong> - Model version {{ ml_status.model_version }} loaded successfully.
+                    Enter clinical parameters below to perform risk assessment.
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Assessment Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clipboard-data me-2"></i>
+                        Clinical Parameters for Assessment
+                    </h5>
+                </div>
+                
+                <div class="card-body p-4">
+                    {% if latest_metrics %}
+                    <div class="alert alert-success mb-4" role="alert">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Form Pre-filled
+                        </h6>
+                        <p class="mb-0">
+                            Values have been pre-filled from the patient's latest clinical metrics 
+                            ({{ latest_metrics.visit_date.strftime('%B %d, %Y') }}). 
+                            You can modify any values as needed.
+                        </p>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="POST" id="riskAssessmentForm" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Demographics Section -->
+                        <div class="mb-4">
+                            <h6 class="text-primary mb-3 border-bottom pb-2">
+                                <i class="bi bi-person me-1"></i>Demographics
+                            </h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.age.label(class="form-label fw-semibold required") }}
+                                    {{ form.age(class="form-control" + (" is-invalid" if form.age.errors else "")) }}
+                                    {% if form.age.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.age.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Patient's current age</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    {{ form.pregnancies_count.label(class="form-label fw-semibold required") }}
+                                    {{ form.pregnancies_count(class="form-control" + (" is-invalid" if form.pregnancies_count.errors else "")) }}
+                                    {% if form.pregnancies_count.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.pregnancies_count.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Including current pregnancy</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Physical Measurements Section -->
+                        <div class="mb-4">
+                            <h6 class="text-primary mb-3 border-bottom pb-2">
+                                <i class="bi bi-activity me-1"></i>Physical Measurements
+                            </h6>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    {{ form.bmi.label(class="form-label fw-semibold required") }}
+                                    {{ form.bmi(class="form-control" + (" is-invalid" if form.bmi.errors else "")) }}
+                                    {% if form.bmi.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.bmi.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <span class="reference-range" data-field="bmi">Normal: 18.5-24.9 kg/m²</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    {{ form.systolic_bp.label(class="form-label fw-semibold required") }}
+                                    {{ form.systolic_bp(class="form-control" + (" is-invalid" if form.systolic_bp.errors else "")) }}
+                                    {% if form.systolic_bp.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.systolic_bp.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <span class="reference-range" data-field="systolic_bp">Normal: 90-120 mmHg</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    {{ form.diastolic_bp.label(class="form-label fw-semibold required") }}
+                                    {{ form.diastolic_bp(class="form-control" + (" is-invalid" if form.diastolic_bp.errors else "")) }}
+                                    {% if form.diastolic_bp.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.diastolic_bp.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <span class="reference-range" data-field="diastolic_bp">Normal: 60-80 mmHg</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Laboratory Values Section -->
+                        <div class="mb-4">
+                            <h6 class="text-primary mb-3 border-bottom pb-2">
+                                <i class="bi bi-droplet me-1"></i>Laboratory Values <small class="text-muted">(Optional but recommended)</small>
+                            </h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.hemoglobin.label(class="form-label fw-semibold") }}
+                                    {{ form.hemoglobin(class="form-control" + (" is-invalid" if form.hemoglobin.errors else "")) }}
+                                    {% if form.hemoglobin.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.hemoglobin.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <span class="reference-range" data-field="hemoglobin">Normal: 11.5-15.0 g/dL</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    {{ form.hdl_cholesterol.label(class="form-label fw-semibold") }}
+                                    {{ form.hdl_cholesterol(class="form-control" + (" is-invalid" if form.hdl_cholesterol.errors else "")) }}
+                                    {% if form.hdl_cholesterol.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.hdl_cholesterol.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <span class="reference-range" data-field="hdl_cholesterol">Optimal: >40 mg/dL</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Risk Factors Section -->
+                        <div class="mb-4">
+                            <h6 class="text-primary mb-3 border-bottom pb-2">
+                                <i class="bi bi-exclamation-triangle me-1"></i>Risk Factors
+                            </h6>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    {{ form.family_history_diabetes.label(class="form-label fw-semibold required") }}
+                                    {{ form.family_history_diabetes(class="form-select" + (" is-invalid" if form.family_history_diabetes.errors else "")) }}
+                                    {% if form.family_history_diabetes.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.family_history_diabetes.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Parents, siblings, or children with diabetes</div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    {{ form.sedentary_lifestyle.label(class="form-label fw-semibold required") }}
+                                    {{ form.sedentary_lifestyle(class="form-select" + (" is-invalid" if form.sedentary_lifestyle.errors else "")) }}
+                                    {% if form.sedentary_lifestyle.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.sedentary_lifestyle.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Limited physical activity</div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    {{ form.prediabetes_history.label(class="form-label fw-semibold required") }}
+                                    {{ form.prediabetes_history(class="form-select" + (" is-invalid" if form.prediabetes_history.errors else "")) }}
+                                    {% if form.prediabetes_history.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.prediabetes_history.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Previous impaired glucose tolerance</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Section -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center pt-4 border-top">
+                                    <div>
+                                        <small class="text-muted">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Required fields are marked with *
+                                        </small>
+                                    </div>
+                                    
+                                    <div>
+                                        {{ form.submit(class="btn btn-primary btn-lg px-5", disabled=not ml_status.is_available) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Information Sidebar -->
+        <div class="col-lg-4">
+            
+            <!-- Patient Summary -->
+            <div class="card border-0 bg-light mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h6 class="mb-0">
+                        <i class="bi bi-person-badge me-1"></i>
+                        Patient Summary
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-5">Name:</dt>
+                        <dd class="col-7">{{ patient.full_name }}</dd>
+                        
+                        <dt class="col-5">Age:</dt>
+                        <dd class="col-7">{{ patient.age }} years</dd>
+                        
+                        {% if patient.gestational_age_weeks %}
+                        <dt class="col-5">Gestation:</dt>
+                        <dd class="col-7">{{ patient.gestational_age_weeks }} weeks</dd>
+                        {% endif %}
+                        
+                        {% if patient.parity is not none %}
+                        <dt class="col-5">Parity:</dt>
+                        <dd class="col-7">{{ patient.parity }}</dd>
+                        {% endif %}
+                        
+                        <dt class="col-5">Assessments:</dt>
+                        <dd class="col-7">{{ patient.assessment_count }}</dd>
+                    </dl>
+                </div>
+            </div>
+            
+            <!-- Assessment Info -->
+            <div class="card border-0 bg-info bg-opacity-10 mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h6 class="mb-0 text-info">
+                        <i class="bi bi-lightbulb me-1"></i>
+                        About This Assessment
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            Uses validated ML model for GDM prediction
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            Based on 10 core clinical parameters
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            Provides risk score and clinical recommendations
+                        </li>
+                        <li class="mb-0">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            Results are saved for tracking and reporting
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Quick Reference -->
+            <div class="card border-0 bg-warning bg-opacity-10">
+                <div class="card-header bg-transparent border-0">
+                    <h6 class="mb-0 text-warning">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Clinical Guidelines
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted">
+                        <strong>Risk Categories:</strong><br>
+                        • <span class="badge bg-success">LOW</span> &lt;33%: Standard care<br>
+                        • <span class="badge bg-warning text-dark">MODERATE</span> 33-66%: Enhanced monitoring<br>
+                        • <span class="badge bg-danger">HIGH</span> &gt;66%: Intensive management<br><br>
+                        
+                        <strong>Note:</strong> This tool provides decision support only. 
+                        Clinical judgment and standard guidelines should guide final decisions.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('riskAssessmentForm');
+    
+    // Real-time validation feedback
+    const inputs = form.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            validateField(this);
+        });
+        
+        input.addEventListener('input', function() {
+            // Clear invalid state when user starts typing
+            this.classList.remove('is-invalid');
+        });
+    });
+    
+    // BMI category display
+    const bmiField = document.getElementById('bmi');
+    if (bmiField) {
+        bmiField.addEventListener('input', function() {
+            updateBMICategory(this.value);
+        });
+    }
+    
+    // Blood pressure category display
+    const systolicField = document.getElementById('systolic_bp');
+    const diastolicField = document.getElementById('diastolic_bp');
+    if (systolicField && diastolicField) {
+        [systolicField, diastolicField].forEach(field => {
+            field.addEventListener('input', function() {
+                updateBPCategory();
+            });
+        });
+    }
+    
+    function validateField(field) {
+        const value = field.value.trim();
+        const fieldName = field.name;
+        
+        // Basic validation
+        if (field.hasAttribute('required') && !value) {
+            showFieldError(field, 'This field is required');
+            return false;
+        }
+        
+        // Numeric range validation
+        if (field.type === 'number' && value) {
+            const numValue = parseFloat(value);
+            const min = field.getAttribute('min');
+            const max = field.getAttribute('max');
+            
+            if (min && numValue < parseFloat(min)) {
+                showFieldError(field, `Value must be at least ${min}`);
+                return false;
+            }
+            
+            if (max && numValue > parseFloat(max)) {
+                showFieldError(field, `Value must be at most ${max}`);
+                return false;
+            }
+        }
+        
+        // Clear any existing errors
+        field.classList.remove('is-invalid');
+        const feedback = field.parentNode.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.style.display = 'none';
+        }
+        
+        return true;
+    }
+    
+    function showFieldError(field, message) {
+        field.classList.add('is-invalid');
+        let feedback = field.parentNode.querySelector('.invalid-feedback');
+        if (!feedback) {
+            feedback = document.createElement('div');
+            feedback.className = 'invalid-feedback';
+            field.parentNode.appendChild(feedback);
+        }
+        feedback.textContent = message;
+        feedback.style.display = 'block';
+    }
+    
+    function updateBMICategory(bmi) {
+        if (!bmi) return;
+        
+        const bmiValue = parseFloat(bmi);
+        let category = '';
+        let categoryClass = '';
+        
+        if (bmiValue < 18.5) {
+            category = 'Underweight';
+            categoryClass = 'text-info';
+        } else if (bmiValue < 25) {
+            category = 'Normal';
+            categoryClass = 'text-success';
+        } else if (bmiValue < 30) {
+            category = 'Overweight';
+            categoryClass = 'text-warning';
+        } else {
+            category = 'Obese';
+            categoryClass = 'text-danger';
+        }
+        
+        const referenceSpan = document.querySelector('.reference-range[data-field="bmi"]');
+        if (referenceSpan) {
+            referenceSpan.innerHTML = `Normal: 18.5-24.9 kg/m² | <span class="${categoryClass}">Current: ${category}</span>`;
+        }
+    }
+    
+    function updateBPCategory() {
+        const systolic = parseFloat(document.getElementById('systolic_bp').value);
+        const diastolic = parseFloat(document.getElementById('diastolic_bp').value);
+        
+        if (!systolic || !diastolic) return;
+        
+        let category = '';
+        let categoryClass = '';
+        
+        if (systolic < 120 && diastolic < 80) {
+            category = 'Normal';
+            categoryClass = 'text-success';
+        } else if (systolic < 130 && diastolic < 80) {
+            category = 'Elevated';
+            categoryClass = 'text-warning';
+        } else if (systolic < 140 || diastolic < 90) {
+            category = 'Stage 1 High';
+            categoryClass = 'text-danger';
+        } else {
+            category = 'Stage 2 High';
+            categoryClass = 'text-danger';
+        }
+        
+        const referenceSpans = document.querySelectorAll('.reference-range[data-field="systolic_bp"], .reference-range[data-field="diastolic_bp"]');
+        referenceSpans.forEach(span => {
+            if (span.getAttribute('data-field') === 'systolic_bp') {
+                span.innerHTML = `Normal: 90-120 mmHg | <span class="${categoryClass}">Current: ${category}</span>`;
+            }
+        });
+    }
+    
+    // Form submission with loading state
+    form.addEventListener('submit', function(e) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+            submitBtn.disabled = true;
+        }
+    });
+});
+</script>
+
+<style>
+.required::after {
+    content: " *";
+    color: #dc3545;
+}
+
+.reference-range {
+    font-size: 0.875em;
+    color: #6c757d;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.is-invalid {
+    animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+</style>
+{% endblock %}

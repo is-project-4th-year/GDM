@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+
+{% block title %}Risk Assessment Results - {{ patient.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-1">
+                <i class="bi bi-graph-up me-2 text-primary"></i>
+                GDM Risk Assessment Results
+            </h2>
+            <p class="text-muted mb-0">
+                Patient: <strong>{{ patient.full_name }}</strong> | 
+                Assessment Date: {{ assessment.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+            </p>
+        </div>
+        
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('patients.detail_patient', patient_id=patient.id) }}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left me-1"></i>Back to Patient
+            </a>
+            <button onclick="window.print()" class="btn btn-outline-primary">
+                <i class="bi bi-printer me-1"></i>Print
+            </button>
+        </div>
+    </div>
+    
+    <!-- Risk Score Display -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm bg-{{ assessment.risk_color }} bg-opacity-10">
+                <div class="card-body text-center py-5">
+                    <div class="row align-items-center">
+                        <div class="col-lg-4">
+                            <div class="display-1 fw-bold text-{{ assessment.risk_color }} mb-2">
+                                {{ assessment.risk_percentage }}%
+                            </div>
+                            <h3 class="text-{{ assessment.risk_color }} mb-0">{{ assessment.risk_label }} RISK</h3>
+                        </div>
+                        
+                        <div class="col-lg-8 text-start">
+                            <h4 class="mb-3">{{ assessment.risk_description }}</h4>
+                            
+                            <!-- Risk Gauge Visual -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between small text-muted mb-1">
+                                    <span>LOW (0-33%)</span>
+                                    <span>MODERATE (33-66%)</span>
+                                    <span>HIGH (66-100%)</span>
+                                </div>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" style="width: 33%"></div>
+                                    <div class="progress-bar bg-warning" style="width: 33%"></div>
+                                    <div class="progress-bar bg-danger" style="width: 34%"></div>
+                                </div>
+                                <div class="position-relative">
+                                    <div class="position-absolute" style="left: {{ assessment.risk_percentage }}%; top: -35px;">
+                                        <i class="bi bi-caret-down-fill text-{{ assessment.risk_color }}" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <p class="mb-0">
+                                <small class="text-muted">
+                                    Assessed by {{ assessment.assessor.name }} using model version {{ assessment.model_version }}
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Clinical Recommendations -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-{{ assessment.risk_color }} text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clipboard-check me-2"></i>
+                        Clinical Recommendations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <ol class="mb-0">
+                                {% for recommendation in assessment.recommendations %}
+                                <li class="mb-2">{{ recommendation }}</li>
+                                {% endfor %}
+                            </ol>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="bg-light rounded p-3">
+                                <h6 class="mb-2">
+                                    <i class="bi bi-info-circle me-1 text-primary"></i>
+                                    Next Steps
+                                </h6>
+                                <ul class="list-unstyled small mb-0">
+                                    <li><i class="bi bi-check2 me-1 text-success"></i>Review recommendations with patient</li>
+                                    <li><i class="bi bi-check2 me-1 text-success"></i>Schedule follow-up appointments</li>
+                                    <li><i class="bi bi-check2 me-1 text-success"></i>Document in patient record</li>
+                                    {% if assessment.risk_label == 'HIGH' %}
+                                    <li><i class="bi bi-exclamation-triangle me-1 text-warning"></i>Consider specialist referral</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Assessment Details -->
+    <div class="row g-4">
+        
+        <!-- Input Parameters -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0">
+                        <i class="bi bi-clipboard-data me-2"></i>
+                        Assessment Parameters
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% set input_data = assessment.input_vector %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="border rounded p-2">
+                                <small class="text-muted">Age</small>
+                                <div class="fw-semibold">{{ input_data.age }} years</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="border rounded p-2">
+                                <small class="text-muted">BMI</small>
+                                <div class="fw-semibold">{{ input_data.bmi }} kg/m²</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="border rounded p-2">
+                                <small class="text-muted">Blood Pressure</small>
+                                <div class="fw-semibold">{{ input_data.systolic_bp }}/{{ input_data.diastolic_bp }} mmHg</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="border rounded p-2">
+                                <small class="text-muted">Pregnancies</small>
+                                <div class="fw-semibold">{{ input_data.pregnancies_count }}</div>
+                            </div>
+                        </div>
+                        
+                        {% if input_data.hemoglobin %}
+                        <div class="col-md-6">
+                            <div class="border rounded p-2">
+                                <small class="text-muted">Hemoglobin</small>
+                                <div class="fw-semibold">{{ input_data.hemoglobin }} g/dL</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if input_data.hdl_cholesterol %}
+                        <div class="col-md-6">
+                            <div class="border rounded p-2">
+                                <small class="text-muted">HDL Cholesterol</small>
+                                <div class="fw-semibold">{{ input_data.hdl_cholesterol }} mg/dL</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Risk Factors -->
+                    <div class="mt-4">
+                        <h6 class="mb-2">Risk Factors Present:</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if input_data.family_history_diabetes %}
+                                <span class="badge bg-warning text-dark">Family History of Diabetes</span>
+                            {% endif %}
+                            {% if input_data.sedentary_lifestyle %}
+                                <span class="badge bg-warning text-dark">Sedentary Lifestyle</span>
+                            {% endif %}
+                            {% if input_data.prediabetes_history %}
+                                <span class="badge bg-warning text-dark">Prediabetes History</span>
+                            {% endif %}
+                            {% if not (input_data.family_history_diabetes or input_data.sedentary_lifestyle or input_data.prediabetes_history) %}
+                                <span class="text-muted">No major risk factors identified</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feature Importance Chart -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0">
+                        <i class="bi bi-bar-chart me-2"></i>
+                        Feature Importance
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="featureChart" width="400" height="300"></canvas>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            This chart shows the relative importance of each clinical parameter 
+                            in the risk prediction model.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">Assessment Complete</h6>
+                            <small class="text-muted">
+                                Results have been saved to the patient's record. 
+                                Consider scheduling follow-up based on risk level.
+                            </small>
+                        </div>
+                        <div class="btn-group">
+                            <a href="{{ url_for('risk.predict_risk', patient_id=patient.id) }}" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-repeat me-1"></i>New Assessment
+                            </a>
+                            <button class="btn btn-outline-success disabled">
+                                <i class="bi bi-file-earmark-pdf me-1"></i>Generate Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Create feature importance chart
+    const ctx = document.getElementById('featureChart').getContext('2d');
+    
+    const featureImportance = {{ feature_importance|tojson }};
+    const labels = Object.keys(featureImportance);
+    const values = Object.values(featureImportance);
+    
+    // Format labels for better display
+    const formattedLabels = labels.map(label => {
+        return label.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    });
+    
+    new Chart(ctx, {
+        type: 'horizontalBar',
+        data: {
+            labels: formattedLabels,
+            datasets: [{
+                label: 'Importance',
+                data: values,
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)',
+                    'rgba(255, 159, 64, 0.8)',
+                    'rgba(199, 199, 199, 0.8)',
+                    'rgba(83, 102, 255, 0.8)',
+                    'rgba(255, 99, 255, 0.8)',
+                    'rgba(99, 255, 132, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(255, 205, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(199, 199, 199, 1)',
+                    'rgba(83, 102, 255, 1)',
+                    'rgba(255, 99, 255, 1)',
+                    'rgba(99, 255, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: Math.max(...values) * 1.1,
+                    ticks: {
+                        callback: function(value) {
+                            return (value * 100).toFixed(0) + '%';
+                        }
+                    }
+                },
+                y: {
+                    ticks: {
+                        font: {
+                            size: 11
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
