@@ -2,6 +2,11 @@
 
 {% block title %}Dashboard - GDM Risk Prediction{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+{% endblock %}
+
 {% block content %}
 <div class="container my-4">
     <!-- Welcome Section -->
@@ -11,9 +16,9 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-md-8">
-                            <h2 class="mb-1">Welcome back, {{ user.name }}!</h2>
+                            <h2 class="mb-1">Welcome back, {{ current_user.name }}!</h2>
                             <p class="mb-0 opacity-75">
-                                {{ user.role.title() }} Dashboard - GDM Risk Prediction System
+                                {{ current_user.role.title() }} Dashboard - GDM Risk Prediction System
                             </p>
                         </div>
                         <div class="col-md-4 text-end">
@@ -38,8 +43,8 @@
                             </div>
                             <h6 class="card-title">Create Patient</h6>
                             <p class="card-text text-muted small">Register new patient for assessment</p>
-                            <a href="#" class="btn btn-outline-success btn-sm disabled">
-                                Coming Soon
+                            <a href="{{ url_for('patients.create_patient') }}" class="btn btn-outline-success btn-sm">
+                                Add Patient
                             </a>
                         </div>
                     </div>
@@ -53,8 +58,8 @@
                             </div>
                             <h6 class="card-title">New Assessment</h6>
                             <p class="card-text text-muted small">Perform GDM risk prediction</p>
-                            <a href="#" class="btn btn-outline-primary btn-sm disabled">
-                                Coming Soon
+                            <a href="{{ url_for('patients.list_patients') }}" class="btn btn-outline-primary btn-sm">
+                                Start Assessment
                             </a>
                         </div>
                     </div>
@@ -68,14 +73,14 @@
                             </div>
                             <h6 class="card-title">View Patients</h6>
                             <p class="card-text text-muted small">Browse patient database</p>
-                            <a href="#" class="btn btn-outline-info btn-sm disabled">
-                                Coming Soon
+                            <a href="{{ url_for('patients.list_patients') }}" class="btn btn-outline-info btn-sm">
+                                View All
                             </a>
                         </div>
                     </div>
                 </div>
                 
-                {% if user.is_admin %}
+                {% if current_user.role == 'admin' %}
                 <div class="col-md-3">
                     <div class="card h-100 border-0 shadow-sm border-warning">
                         <div class="card-body text-center">
@@ -101,43 +106,76 @@
             <h4 class="mb-3">System Overview</h4>
             <div class="row g-3">
                 <div class="col-md-3">
-                    <div class="card bg-light border-0">
+                    <div class="card bg-light border-0 kpi-card">
                         <div class="card-body text-center">
-                            <div class="display-6 text-primary fw-bold">0</div>
+                            <div class="display-6 text-primary fw-bold">{{ stats.total_patients }}</div>
                             <div class="text-muted">Total Patients</div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="col-md-3">
-                    <div class="card bg-light border-0">
+                    <div class="card bg-light border-0 kpi-card">
                         <div class="card-body text-center">
-                            <div class="display-6 text-success fw-bold">0</div>
-                            <div class="text-muted">Assessments Today</div>
+                            <div class="display-6 text-success fw-bold">{{ stats.assessments_this_week }}</div>
+                            <div class="text-muted">Assessments This Week</div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="col-md-3">
-                    <div class="card bg-light border-0">
+                    <div class="card bg-light border-0 kpi-card">
                         <div class="card-body text-center">
-                            <div class="display-6 text-info fw-bold">0</div>
-                            <div class="text-muted">Reports Generated</div>
+                            <div class="display-6 text-danger fw-bold">{{ stats.high_risk_count }}</div>
+                            <div class="text-muted">High Risk Cases</div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="col-md-3">
-                    <div class="card bg-light border-0">
+                    <div class="card bg-light border-0 kpi-card">
                         <div class="card-body text-center">
-                            <div class="display-6 text-warning fw-bold">{{ user.role.title() }}</div>
-                            <div class="text-muted">Your Role</div>
+                            <div class="display-6 text-info fw-bold">{{ stats.total_assessments }}</div>
+                            <div class="text-muted">Total Assessments</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Charts Section -->
+    {% if chart_data %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">Risk Distribution</h5>
+                    <small class="text-muted">Current patient risk levels</small>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="riskDistributionChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">Assessment Trends</h5>
+                    <small class="text-muted">Weekly assessment activity</small>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="assessmentTrendsChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
     
     <!-- Recent Activity -->
     <div class="row">
@@ -147,11 +185,62 @@
                     <h5 class="mb-0">Recent Activity</h5>
                 </div>
                 <div class="card-body">
+                    {% if recent_assessments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Risk Score</th>
+                                    <th>Risk Level</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assessment in recent_assessments %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                                <i class="bi bi-person text-muted"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{ assessment.patient.first_name }} {{ assessment.patient.last_name }}</div>
+                                                <small class="text-muted">ID: {{ assessment.patient.uuid[:8] }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium">{{ "%.1f"|format(assessment.risk_score * 100) }}%</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if assessment.risk_label == 'HIGH' %}bg-danger{% elif assessment.risk_label == 'MODERATE' %}bg-warning{% else %}bg-success{% endif %}">
+                                            {{ assessment.risk_label }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ assessment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('patients.detail_patient', patient_id=assessment.patient.id) }}" class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
                     <div class="text-center py-5">
                         <i class="bi bi-clock-history text-muted" style="font-size: 3rem;"></i>
                         <p class="text-muted mt-3 mb-0">No recent activity</p>
                         <small class="text-muted">Patient assessments and reports will appear here</small>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -168,7 +257,7 @@
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span>ML Models</span>
-                        <span class="badge bg-warning text-dark">Not Loaded</span>
+                        <span class="badge bg-success">Loaded</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span>Authentication</span>
@@ -181,7 +270,7 @@
                 </div>
             </div>
             
-            {% if user.is_admin %}
+            {% if current_user.role == 'admin' %}
             <div class="alert alert-info mt-3" role="alert">
                 <h6 class="alert-heading">
                     <i class="bi bi-lightbulb me-1"></i>
@@ -196,4 +285,20 @@
         </div>
     </div>
 </div>
+
+<!-- Chart Data (Hidden) -->
+{% if chart_data %}
+<script id="chartData" type="application/json">
+{
+    "riskDistribution": {{ chart_data.risk_distribution | tojson | safe }},
+    "assessmentTrends": {{ chart_data.assessment_trends | tojson | safe }}
+}
+</script>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if chart_data %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endif %}
 {% endblock %}

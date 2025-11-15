@@ -63,10 +63,9 @@
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-person-circle me-1"></i>
                                 {{ current_user.name }}
-                                {% if current_user.is_admin %}
-                                    <span class="badge bg-warning text-dark ms-1">Admin</span>
-                                {% endif %}
+                                
                             </a>
+                            
                             <ul class="dropdown-menu dropdown-menu-end">
                                 {% if current_user.is_admin %}
                                     <li>
