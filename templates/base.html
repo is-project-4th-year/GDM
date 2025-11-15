@@ -8,166 +8,322 @@
     <title>{% block title %}GDM Risk Prediction{% endblock %}</title>
     
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     
     {% block extra_head %}{% endblock %}
+
+    <style>
+        /* Modern Side Navigation Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1e3a8a 0%, #3730a3 100%);
+            color: white;
+            z-index: 1000;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar-collapsed {
+            transform: translateX(-280px);
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+            background-color: #f8fafc;
+        }
+        
+        .main-content-expanded {
+            margin-left: 0;
+        }
+        
+        .sidebar-header {
+            padding: 2rem 1.5rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: rgba(255,255,255,0.1);
+            margin: 1rem 1.5rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(45deg, #06b6d4, #3b82f6);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .nav-menu {
+            padding: 1rem 0;
+        }
+        
+        .nav-item {
+            margin: 0.25rem 1.5rem;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.875rem 1rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateX(4px);
+        }
+        
+        .nav-link.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .nav-link i {
+            width: 20px;
+            margin-right: 0.875rem;
+            text-align: center;
+        }
+        
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1100;
+            background: #1e3a8a;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .sidebar-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .logout-link {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .logout-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-280px);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .mobile-toggle {
+                display: block;
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+        }
+        
+        /* Flash messages */
+        .alert {
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+        }
+        
+        .content-header {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+    </style>
 </head>
-<body class="d-flex flex-column min-vh-100">
+<body>
     
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('core.index') }}">
+    {% if current_user.is_authenticated %}
+    <!-- Mobile Toggle -->
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+    
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <!-- Header -->
+        <div class="sidebar-header">
+            <h4 class="mb-0 fw-bold">
                 <i class="bi bi-heart-pulse me-2"></i>
-                GDM Risk Prediction
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    {% if current_user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link{{ ' active' if request.endpoint == 'core.dashboard' }}" href="{{ url_for('core.dashboard') }}">
-                                <i class="bi bi-speedometer2 me-1"></i>Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link{{ ' active' if request.blueprint == 'patients' }}" href="{{ url_for('patients.list_patients') }}">
-                                <i class="bi bi-people me-1"></i>Patients
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link disabled" href="#">
-                                <i class="bi bi-clipboard-pulse me-1"></i>Assessments
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
-                
-                <ul class="navbar-nav">
-                    {% if current_user.is_authenticated %}
-                        <!-- User dropdown -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle me-1"></i>
-                                {{ current_user.name }}
-                                
-                            </a>
-                            
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                {% if current_user.is_admin %}
-                                    <li>
-                                        <a class="dropdown-item" href="{{ url_for('auth.register') }}">
-                                            <i class="bi bi-person-plus me-2"></i>Register User
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                {% endif %}
-                                <li>
-                                    <a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                                        <i class="bi bi-box-arrow-right me-2"></i>Log Out
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link{{ ' active' if request.endpoint == 'auth.login' }}" href="{{ url_for('auth.login') }}">
-                                <i class="bi bi-box-arrow-in-right me-1"></i>Login
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
+                GDM Risk
+            </h4>
+            <small class="text-white-50">Clinical Decision Support</small>
+        </div>
+        
+        <!-- User Profile -->
+        <div class="user-profile">
+            <div class="user-avatar">
+                {{ current_user.name[0].upper() }}
+            </div>
+            <div class="ms-3 flex-grow-1">
+                <div class="fw-semibold">{{ current_user.name }}</div>
+                <small class="text-white-50">{{ current_user.role.title() }}</small>
             </div>
         </div>
-    </nav>
-    
-    <!-- Breadcrumb -->
-    {% if breadcrumbs %}
-    <nav aria-label="breadcrumb" class="bg-light border-bottom">
-        <div class="container">
-            <ol class="breadcrumb mb-0 py-2">
-                {% for breadcrumb in breadcrumbs %}
-                    {% if loop.last %}
-                        <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb.name }}</li>
-                    {% else %}
-                        <li class="breadcrumb-item">
-                            <a href="{{ breadcrumb.url }}">{{ breadcrumb.name }}</a>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            </ol>
+        
+        <!-- Navigation Menu -->
+        <div class="nav-menu">
+            <div class="nav-item">
+                <a href="{{ url_for('core.dashboard') }}" class="nav-link {{ 'active' if request.endpoint == 'core.dashboard' }}">
+                    <i class="bi bi-speedometer2"></i>
+                    Dashboard
+                </a>
+            </div>
+            
+            <div class="nav-item">
+                <a href="{{ url_for('patients.list_patients') }}" class="nav-link {{ 'active' if request.blueprint == 'patients' }}">
+                    <i class="bi bi-people"></i>
+                    Patients
+                </a>
+            </div>
+            
+            <div class="nav-item">
+                <a href="{{ url_for('patients.create_patient') }}" class="nav-link">
+                    <i class="bi bi-person-plus"></i>
+                    Add Patient
+                </a>
+            </div>
+            
+            <div class="nav-item">
+                <a href="{{ url_for('reports.list_reports') }}" class="nav-link {{ 'active' if request.blueprint == 'reports' }}">
+                    <i class="bi bi-file-earmark-text"></i>
+                    Reports
+                </a>
+            </div>
+            
+            {% if current_user.role == 'admin' %}
+            <div class="nav-item">
+                <a href="{{ url_for('auth.register') }}" class="nav-link {{ 'active' if request.endpoint == 'auth.register' }}">
+                    <i class="bi bi-person-gear"></i>
+                    Manage Users
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Footer -->
+        <div class="sidebar-footer">
+            <a href="{{ url_for('auth.logout') }}" class="logout-link">
+                <i class="bi bi-box-arrow-right me-2"></i>
+                Sign Out
+            </a>
         </div>
     </nav>
-    {% endif %}
-    
-    <!-- Flash Messages -->
-    <div class="container mt-3">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                        {% if category == 'success' %}
-                            <i class="bi bi-check-circle me-2"></i>
-                        {% elif category == 'error' %}
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                        {% elif category == 'warning' %}
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                        {% else %}
-                            <i class="bi bi-info-circle me-2"></i>
-                        {% endif %}
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
     
     <!-- Main Content -->
-    <main class="flex-grow-1">
-        {% block content %}{% endblock %}
-    </main>
-    
-    <!-- Footer -->
-    <footer class="bg-light border-top mt-5">
-        <div class="container py-4">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <p class="text-muted mb-0">
-                        &copy; 2024 GDM Risk Prediction System. 
-                        <small>Clinical Decision Support Tool</small>
-                    </p>
-                </div>
-                <div class="col-md-6 text-end">
-                    <small class="text-muted">
-                        <i class="bi bi-shield-check me-1"></i>
-                        HIPAA Compliant &bull; 
-                        <i class="bi bi-clock me-1"></i>
-                        Version {{ config.MODEL_VERSION or '1.0.0' }}
-                        {% if current_user.is_authenticated %}
-                            &bull; <i class="bi bi-person me-1"></i>{{ current_user.role.title() }}
-                        {% endif %}
-                    </small>
-                </div>
-            </div>
+    <main class="main-content" id="mainContent">
+    {% endif %}
+        
+        <!-- Flash Messages -->
+        {% if current_user.is_authenticated %}
+        <div class="container-fluid px-4 pt-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {% if category == 'success' %}
+                                <i class="bi bi-check-circle me-2"></i>
+                            {% elif category == 'error' %}
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                            {% elif category == 'warning' %}
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                            {% else %}
+                                <i class="bi bi-info-circle me-2"></i>
+                            {% endif %}
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
         </div>
-    </footer>
+        {% endif %}
+        
+        <!-- Page Content -->
+        {% block content %}{% endblock %}
     
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    {% if current_user.is_authenticated %}
+    </main>
+    {% endif %}
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('mobile-open');
+        }
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.querySelector('.mobile-toggle');
+            
+            if (window.innerWidth <= 768 && 
+                !sidebar.contains(event.target) && 
+                !toggle.contains(event.target)) {
+                sidebar.classList.remove('mobile-open');
+            }
+        });
+    </script>
     
     {% block extra_scripts %}{% endblock %}
 </body>

@@ -165,11 +165,10 @@ def detail_patient(patient_id):
         ]
     )
 
-
 @patients_bp.route('/<int:patient_id>/metrics/new', methods=['GET', 'POST'])
 @login_required
 def add_clinical_metrics(patient_id):
-    """Add clinical metrics for a patient."""
+    """Add clinical metrics for a patient - Redirect to risk assessment."""
     
     patient = Patient.query.get_or_404(patient_id)
     
@@ -177,47 +176,10 @@ def add_clinical_metrics(patient_id):
         flash('Cannot add metrics to an inactive patient record.', 'error')
         return redirect(url_for('patients.detail_patient', patient_id=patient_id))
     
-    form = ClinicalMetricsForm()
-    
-    if form.validate_on_submit():
-        try:
-            # Get processed form data
-            metrics_data = form.get_processed_data()
-            
-            # Create clinical metrics
-            metrics = ClinicalMetrics(patient_id=patient.id, **metrics_data)
-            
-            # Save to database
-            db.session.add(metrics)
-            db.session.commit()
-            
-            # Log the action
-            AuditLog.log_action(
-                action=AuditAction.ADD_CLINICAL_METRICS,
-                user_id=current_user.id,
-                entity="metrics",
-                entity_id=metrics.id,
-                details=f"Added clinical metrics for patient: {patient.full_name}"
-            )
-            
-            flash(f'Clinical metrics added successfully for {patient.full_name}!', 'success')
-            return redirect(url_for('patients.detail_patient', patient_id=patient.id))
-            
-        except Exception as e:
-            db.session.rollback()
-            flash('An error occurred while saving the clinical metrics. Please try again.', 'error')
-    
-    return render_template(
-        'patients/add_metrics.html',
-        form=form,
-        patient=patient,
-        breadcrumbs=[
-            {'name': 'Dashboard', 'url': url_for('core.dashboard')},
-            {'name': 'Patients', 'url': url_for('patients.list_patients')},
-            {'name': patient.full_name, 'url': url_for('patients.detail_patient', patient_id=patient.id)},
-            {'name': 'Add Metrics', 'url': url_for('patients.add_clinical_metrics', patient_id=patient.id)}
-        ]
-    )
+    # Since clinical metrics are entered during risk assessment, 
+    # redirect to the risk assessment page
+    flash(f'Add clinical metrics for {patient.full_name} during the risk assessment.', 'info')
+    return redirect(url_for('risk.predict_risk', patient_id=patient_id))
 
 
 @patients_bp.route('/<int:patient_id>/history')

@@ -240,7 +240,8 @@ class AuditAction:
     # Reports
     GENERATE_REPORT = "GENERATE_REPORT"
     DOWNLOAD_REPORT = "DOWNLOAD_REPORT"
-    
+    DELETE_REPORT = "DELETE_REPORT"
+     
     # User management
     CREATE_USER = "CREATE_USER"
     UPDATE_USER = "UPDATE_USER"

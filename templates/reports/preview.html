@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Report Preview - {{ patient.full_name }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/report.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Header Actions -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>📄 Report Preview</h2>
+                <div>
+                    <a href="{{ url_for('risk.view_assessment', id=assessment.id) }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Back to Assessment
+                    </a>
+                    <button type="button" class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#generateModal">
+                        <i class="bi bi-download me-1"></i>Generate PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Content -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <!-- Report Header -->
+                    <div class="report-header text-center mb-4">
+                        <div class="report-logo">🩺 GDM Risk Prediction System</div>
+                        <div class="report-subtitle">Gestational Diabetes Mellitus Risk Assessment Report</div>
+                        <small class="text-muted">Preview - Generated {{ moment().format('MMMM Do, YYYY [at] h:mm A') if moment else 'now' }}</small>
+                    </div>
+
+                    <!-- Patient Information -->
+                    <div class="report-section">
+                        <h4 class="section-title">Patient Information</h4>
+                        <div class="patient-info-card">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-sm table-borderless">
+                                        <tr>
+                                            <th width="40%">Full Name:</th>
+                                            <td>{{ patient.full_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Patient ID:</th>
+                                            <td>{{ patient.uuid }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Date of Birth:</th>
+                                            <td>{{ patient.date_of_birth.strftime('%B %d, %Y') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Age:</th>
+                                            <td>{{ age_at_assessment }} years</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-sm table-borderless">
+                                        {% if patient.phone %}
+                                        <tr>
+                                            <th width="40%">Phone:</th>
+                                            <td>{{ patient.phone }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% if patient.national_id %}
+                                        <tr>
+                                            <th>National ID:</th>
+                                            <td>{{ patient.national_id }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        <tr>
+                                            <th>Assessment Date:</th>
+                                            <td>{{ assessment.created_at.strftime('%B %d, %Y') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Assessment Time:</th>
+                                            <td>{{ assessment.created_at.strftime('%I:%M %p') }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Risk Assessment Results -->
+                    <div class="report-section">
+                        <h4 class="section-title">Risk Assessment Results</h4>
+                        
+                        <div class="risk-score-display {% if risk_interpretation.level == 'High Risk' %}risk-high{% elif risk_interpretation.level == 'Moderate Risk' %}risk-moderate{% else %}risk-low{% endif %}">
+                            <div class="risk-score-value">
+                                {{ "%.1f"|format(assessment.risk_score * 100) }}%
+                            </div>
+                            <div class="risk-level">
+                                {{ risk_interpretation.level }}
+                            </div>
+                            <div class="risk-description">
+                                {{ risk_interpretation.description }}
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-3">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Clinical Follow-up:</strong> {{ risk_interpretation.follow_up }}
+                        </div>
+                    </div>
+
+                    <!-- Clinical Data -->
+                    <div class="report-section">
+                        <h4 class="section-title">Clinical Data Used for Assessment</h4>
+                        
+                        {% if input_data %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Value</th>
+                                        <th>Reference Range</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Age</td>
+                                        <td>{{ input_data.age }} years</td>
+                                        <td class="text-muted">N/A</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Body Mass Index (BMI)</td>
+                                        <td>{{ input_data.bmi }}</td>
+                                        <td class="text-muted">&lt;25 Normal, 25-29.9 Overweight, ≥30 Obese</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Systolic Blood Pressure</td>
+                                        <td>{{ input_data.systolic_bp }}</td>
+                                        <td class="text-muted">&lt;140 mmHg</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Diastolic Blood Pressure</td>
+                                        <td>{{ input_data.diastolic_bp }}</td>
+                                        <td class="text-muted">&lt;90 mmHg</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Hemoglobin</td>
+                                        <td>{{ input_data.hemoglobin }}</td>
+                                        <td class="text-muted">11.0-15.0 g/dL (pregnancy)</td>
+                                    </tr>
+                                    <tr>
+                                        <td>HDL Cholesterol</td>
+                                        <td>{{ input_data.hdl }}</td>
+                                        <td class="text-muted">&gt;40 mg/dL</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Previous Pregnancies</td>
+                                        <td>{{ input_data.pregnancies }}</td>
+                                        <td class="text-muted">N/A</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Family History of Diabetes</td>
+                                        <td>{{ input_data.family_history }}</td>
+                                        <td class="text-muted">N/A</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sedentary Lifestyle</td>
+                                        <td>{{ input_data.sedentary_lifestyle }}</td>
+                                        <td class="text-muted">N/A</td>
+                                    </tr>
+                                    <tr>
+                                        <td>History of Prediabetes</td>
+                                        <td>{{ input_data.prediabetes }}</td>
+                                        <td class="text-muted">N/A</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Clinical data not available for preview.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Clinical Recommendations -->
+                    {% if recommendations %}
+                    <div class="report-section">
+                        <h4 class="section-title">Clinical Recommendations</h4>
+                        
+                        <div class="recommendations-card">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-clipboard-check me-2"></i>Recommended Actions:
+                            </h5>
+                            <ul class="recommendations-list">
+                                {% for recommendation in recommendations %}
+                                <li>{{ recommendation }}</li>
+                                {% endfor %}
+                            </ul>
+                            
+                            <div class="alert alert-light border mt-3">
+                                <small>
+                                    <strong>Note:</strong> These recommendations are generated based on the risk assessment results and should be reviewed by a qualified healthcare provider. Individual patient circumstances may require modified approaches.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Assessment Details -->
+                    <div class="report-section">
+                        <h4 class="section-title">Assessment Details</h4>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-sm table-borderless">
+                                    <tr>
+                                        <th width="50%">Assessment ID:</th>
+                                        <td>{{ assessment.id }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Model Version:</th>
+                                        <td>{{ assessment.model_version or 'v1.0.0' }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-sm table-borderless">
+                                    <tr>
+                                        <th width="50%">Risk Label:</th>
+                                        <td>
+                                            <span class="badge {% if assessment.risk_label == 'HIGH' %}bg-danger{% elif assessment.risk_label == 'MODERATE' %}bg-warning{% else %}bg-success{% endif %}">
+                                                {{ assessment.risk_label }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Assessed By:</th>
+                                        <td>{{ assessment.assessed_by_user.name if assessment.assessed_by_user else 'System' }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disclaimer -->
+                    <div class="report-section">
+                        <div class="alert alert-warning border-warning">
+                            <h5 class="alert-heading">
+                                <i class="bi bi-exclamation-triangle me-2"></i>Important Disclaimer
+                            </h5>
+                            <p class="mb-0 small">
+                                This risk assessment is for clinical decision support only and should not replace clinical judgment. 
+                                The results are based on statistical models and population data. Individual patient factors not 
+                                captured in this assessment may significantly impact actual risk. Always consult with qualified 
+                                healthcare providers for diagnosis and treatment decisions. This assessment does not constitute 
+                                medical advice, diagnosis, or treatment recommendation.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Generate PDF Modal -->
+<div class="modal fade" id="generateModal" tabindex="-1" aria-labelledby="generateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="generateModalLabel">
+                    <i class="bi bi-file-pdf me-2"></i>Generate PDF Report
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('reports.generate_report', assessment_id=assessment.id) }}" method="POST">
+                <div class="modal-body">
+                    <p>Generate a PDF report for <strong>{{ patient.full_name }}</strong>'s risk assessment.</p>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="include_recommendations" id="includeRecommendations" checked>
+                        <label class="form-check-label" for="includeRecommendations">
+                            Include clinical recommendations in the report
+                        </label>
+                    </div>
+                    
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            The PDF will include patient demographics, assessment results, clinical data, and recommendations (if selected). 
+                            This report can be downloaded, printed, or shared with the patient or other healthcare providers.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-download me-1"></i>Generate PDF
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-focus the generate button when modal opens
+document.getElementById('generateModal').addEventListener('shown.bs.modal', function () {
+    this.querySelector('button[type="submit"]').focus();
+});
+
+// Print preview functionality (optional)
+function printPreview() {
+    window.print();
+}
+
+// Add print button if needed
+document.addEventListener('DOMContentLoaded', function() {
+    // You can add additional JavaScript for report interactions here
+});
+</script>
+{% endblock %}

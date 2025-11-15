@@ -224,8 +224,74 @@
         
     </div>
     
-    <!-- Actions -->
+<!-- Report Generation Section -->
     <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-file-earmark-text me-2"></i>Report Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="mb-1">Generate Professional Report</h6>
+                            <p class="text-muted mb-0">
+                                Create a comprehensive PDF report including patient demographics, risk assessment results, 
+                                clinical data, and personalized recommendations for medical records and patient sharing.
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{{ url_for('reports.preview_report', assessment_id=assessment.id) }}" 
+                               class="btn btn-outline-primary me-2">
+                                <i class="bi bi-eye me-1"></i>Preview
+                            </a>
+                            <button type="button" 
+                                    class="btn btn-primary" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#quickGenerateModal">
+                                <i class="bi bi-download me-1"></i>Generate PDF
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Show existing reports if any -->
+                    {% set existing_reports = assessment.reports.filter_by(is_active=True).all() %}
+                    {% if existing_reports %}
+                    <hr class="my-3">
+                    <h6 class="mb-2">Existing Reports</h6>
+                    <div class="row">
+                        {% for report in existing_reports %}
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center justify-content-between p-2 bg-light rounded">
+                                <div>
+                                    <small class="fw-medium">{{ report.generated_at.strftime('%b %d, %Y at %I:%M %p') }}</small>
+                                    <br>
+                                    <small class="text-muted">{{ report.formatted_file_size }} • By {{ report.generator.name }}</small>
+                                </div>
+                                <div>
+                                    <a href="{{ url_for('reports.download_report', report_id=report.id) }}" 
+                                       class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                    <a href="{{ url_for('reports.view_report', report_id=report.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Other Actions -->
+    <div class="row mt-3">
         <div class="col-12">
             <div class="card border-0 bg-light">
                 <div class="card-body">
@@ -241,20 +307,67 @@
                             <a href="{{ url_for('risk.predict_risk', patient_id=patient.id) }}" class="btn btn-outline-primary">
                                 <i class="bi bi-arrow-repeat me-1"></i>New Assessment
                             </a>
-                            <button class="btn btn-outline-success disabled">
-                                <i class="bi bi-file-earmark-pdf me-1"></i>Generate Report
-                            </button>
+                            <a href="{{ url_for('patients.detail_patient', patient_id=patient.id) }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-person me-1"></i>Patient Profile
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
+
+</div>
+
+<!-- Quick Generate Modal -->
+<div class="modal fade" id="quickGenerateModal" tabindex="-1" aria-labelledby="quickGenerateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quickGenerateModalLabel">
+                    <i class="bi bi-file-pdf me-2"></i>Quick PDF Generation
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('reports.generate_report', assessment_id=assessment.id) }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <h6>Patient: {{ patient.full_name }}</h6>
+                        <p class="text-muted mb-3">
+                            Risk Score: <span class="fw-bold">{{ assessment.risk_percentage }}%</span> 
+                            (<span class="badge {% if assessment.risk_label == 'HIGH' %}bg-danger{% elif assessment.risk_label == 'MODERATE' %}bg-warning{% else %}bg-success{% endif %}">{{ assessment.risk_label }}</span>)
+                        </p>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="include_recommendations" id="quickIncludeRecommendations" checked>
+                        <label class="form-check-label" for="quickIncludeRecommendations">
+                            Include clinical recommendations
+                        </label>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <small>
+                            The PDF will be generated immediately and ready for download. 
+                            You can preview the report first by clicking the "Preview" button above.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-download me-1"></i>Generate Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Create feature importance chart

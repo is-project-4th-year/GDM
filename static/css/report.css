@@ -1,0 +1,359 @@
+/* Report Preview and PDF Styling */
+
+/* Report Header */
+.report-header {
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.report-logo {
+    font-size: 28px;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 5px;
+}
+
+.report-subtitle {
+    font-size: 16px;
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+
+/* Section Styling */
+.report-section {
+    margin-bottom: 35px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #007bff;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+}
+
+/* Patient Information Card */
+.patient-info-card {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* Risk Score Display */
+.risk-score-display {
+    text-align: center;
+    padding: 25px;
+    border-radius: 10px;
+    margin: 20px 0;
+    border: 2px solid;
+}
+
+.risk-score-value {
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.risk-level {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.risk-description {
+    font-size: 14px;
+    font-weight: normal;
+    opacity: 0.9;
+}
+
+/* Risk Level Colors */
+.risk-low {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.risk-moderate {
+    background-color: #fff3cd;
+    color: #856404;
+    border-color: #ffeaa7;
+}
+
+.risk-high {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+/* Recommendations Card */
+.recommendations-card {
+    background-color: #e7f3ff;
+    border: 1px solid #bee5eb;
+    border-left: 4px solid #007bff;
+    border-radius: 0 8px 8px 0;
+    padding: 20px;
+}
+
+.recommendations-list {
+    margin: 0;
+    padding-left: 25px;
+    line-height: 1.6;
+}
+
+.recommendations-list li {
+    margin-bottom: 8px;
+    position: relative;
+}
+
+.recommendations-list li::marker {
+    color: #007bff;
+    font-weight: bold;
+}
+
+/* Tables */
+.table-borderless th {
+    font-weight: 600;
+    color: #495057;
+    padding: 8px 0;
+}
+
+.table-borderless td {
+    padding: 8px 0;
+    border: none;
+}
+
+.table-bordered {
+    border: 1px solid #dee2e6;
+}
+
+.table-bordered th,
+.table-bordered td {
+    border: 1px solid #dee2e6;
+    padding: 12px;
+}
+
+.table-light {
+    background-color: #f8f9fa;
+}
+
+.table th {
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Badges and Status */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+}
+
+/* Alerts and Notices */
+.alert {
+    border-radius: 8px;
+    border: 1px solid transparent;
+}
+
+.alert-info {
+    background-color: #cff4fc;
+    border-color: #9eeaf9;
+    color: #055160;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffecb5;
+    color: #664d03;
+}
+
+.alert-light {
+    background-color: #fefefe;
+    border-color: #e9ecef;
+    color: #495057;
+}
+
+/* Modal Enhancements */
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.modal-title {
+    font-weight: 600;
+    color: #495057;
+}
+
+.modal-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Form Elements */
+.form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.form-check-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+/* Card Enhancements */
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+/* Button Styling */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Print Styles */
+@media print {
+    .report-header {
+        border-bottom: 2px solid #000;
+        page-break-after: avoid;
+    }
+    
+    .report-section {
+        page-break-inside: avoid;
+        margin-bottom: 20px;
+    }
+    
+    .section-title {
+        color: #000;
+        border-bottom: 1px solid #000;
+    }
+    
+    .risk-score-display {
+        border: 2px solid #000 !important;
+        page-break-inside: avoid;
+    }
+    
+    .recommendations-card {
+        border: 1px solid #000;
+        background-color: #f8f9fa !important;
+    }
+    
+    .table-bordered {
+        border: 1px solid #000;
+    }
+    
+    .table-bordered th,
+    .table-bordered td {
+        border: 1px solid #000;
+    }
+    
+    .alert {
+        border: 1px solid #000;
+        background-color: #f8f9fa !important;
+    }
+    
+    .btn, .modal, .modal-backdrop {
+        display: none !important;
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .report-logo {
+        font-size: 24px;
+    }
+    
+    .report-subtitle {
+        font-size: 14px;
+    }
+    
+    .risk-score-value {
+        font-size: 28px;
+    }
+    
+    .risk-level {
+        font-size: 18px;
+    }
+    
+    .section-title {
+        font-size: 16px;
+    }
+    
+    .patient-info-card {
+        padding: 15px;
+    }
+    
+    .recommendations-card {
+        padding: 15px;
+    }
+    
+    .modal-body {
+        padding: 1rem;
+    }
+}
+
+/* Loading States */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    width: 3rem;
+    height: 3rem;
+    color: #007bff;
+}
+
+/* Animation for smooth transitions */
+.report-section {
+    opacity: 0;
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.report-section:nth-child(1) { animation-delay: 0.1s; }
+.report-section:nth-child(2) { animation-delay: 0.2s; }
+.report-section:nth-child(3) { animation-delay: 0.3s; }
+.report-section:nth-child(4) { animation-delay: 0.4s; }
+.report-section:nth-child(5) { animation-delay: 0.5s; }

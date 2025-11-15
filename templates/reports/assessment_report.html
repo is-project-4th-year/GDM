@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDM Risk Assessment Report - {{ patient.full_name }}</title>
+    <style>
+        /* This CSS will be injected by the PDF service */
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">🩺 GDM Risk Prediction System</div>
+        <div class="subtitle">Gestational Diabetes Mellitus Risk Assessment Report</div>
+        <div style="margin-top: 10px; font-size: 12px; color: #666;">
+            Generated on {{ generated_at.strftime('%B %d, %Y at %I:%M %p') }}
+        </div>
+    </div>
+
+    <!-- Patient Information -->
+    <div class="section">
+        <h2 class="section-title">Patient Information</h2>
+        <div class="patient-info">
+            <table class="data-table">
+                <tr>
+                    <th style="width: 30%;">Full Name</th>
+                    <td>{{ patient.full_name }}</td>
+                </tr>
+                <tr>
+                    <th>Patient ID</th>
+                    <td>{{ patient.uuid }}</td>
+                </tr>
+                <tr>
+                    <th>Date of Birth</th>
+                    <td>{{ patient.date_of_birth.strftime('%B %d, %Y') }}</td>
+                </tr>
+                <tr>
+                    <th>Age</th>
+                    <td>{{ age_at_assessment }} years</td>
+                </tr>
+                {% if patient.phone %}
+                <tr>
+                    <th>Phone</th>
+                    <td>{{ patient.phone }}</td>
+                </tr>
+                {% endif %}
+                {% if patient.national_id %}
+                <tr>
+                    <th>National ID</th>
+                    <td>{{ patient.national_id }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <th>Assessment Date</th>
+                    <td>{{ risk_assessment.created_at.strftime('%B %d, %Y at %I:%M %p') }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Risk Assessment Results -->
+    <div class="section">
+        <h2 class="section-title">Risk Assessment Results</h2>
+        
+        <div class="risk-score {% if risk_interpretation.level == 'High Risk' %}risk-high{% elif risk_interpretation.level == 'Moderate Risk' %}risk-moderate{% else %}risk-low{% endif %}">
+            <div style="font-size: 24px; margin-bottom: 10px;">
+                Risk Score: {{ "%.1f"|format(risk_assessment.risk_score * 100) }}%
+            </div>
+            <div style="font-size: 18px; margin-bottom: 5px;">
+                {{ risk_interpretation.level }}
+            </div>
+            <div style="font-size: 14px; font-weight: normal;">
+                {{ risk_interpretation.description }}
+            </div>
+        </div>
+
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 15px;">
+            <strong>Clinical Follow-up:</strong> {{ risk_interpretation.follow_up }}
+        </div>
+    </div>
+
+    <!-- Clinical Data Used for Assessment -->
+    <div class="section">
+        <h2 class="section-title">Clinical Data Used for Assessment</h2>
+        
+        {% if input_data %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                    <th>Reference Range</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Age</td>
+                    <td>{{ input_data.age }} years</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>Body Mass Index (BMI)</td>
+                    <td>{{ input_data.bmi }}</td>
+                    <td>&lt;25 Normal, 25-29.9 Overweight, ≥30 Obese</td>
+                </tr>
+                <tr>
+                    <td>Systolic Blood Pressure</td>
+                    <td>{{ input_data.systolic_bp }}</td>
+                    <td>&lt;140 mmHg</td>
+                </tr>
+                <tr>
+                    <td>Diastolic Blood Pressure</td>
+                    <td>{{ input_data.diastolic_bp }}</td>
+                    <td>&lt;90 mmHg</td>
+                </tr>
+                <tr>
+                    <td>Hemoglobin</td>
+                    <td>{{ input_data.hemoglobin }}</td>
+                    <td>11.0-15.0 g/dL (pregnancy)</td>
+                </tr>
+                <tr>
+                    <td>HDL Cholesterol</td>
+                    <td>{{ input_data.hdl }}</td>
+                    <td>&gt;40 mg/dL</td>
+                </tr>
+                <tr>
+                    <td>Previous Pregnancies</td>
+                    <td>{{ input_data.pregnancies }}</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>Family History of Diabetes</td>
+                    <td>{{ input_data.family_history }}</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>Sedentary Lifestyle</td>
+                    <td>{{ input_data.sedentary_lifestyle }}</td>
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                    <td>History of Prediabetes</td>
+                    <td>{{ input_data.prediabetes }}</td>
+                    <td>N/A</td>
+                </tr>
+            </tbody>
+        </table>
+        {% else %}
+        <p style="color: #666; font-style: italic;">Clinical data not available for display.</p>
+        {% endif %}
+    </div>
+
+    <!-- Clinical Recommendations -->
+    {% if include_recommendations and recommendations %}
+    <div class="section">
+        <h2 class="section-title">Clinical Recommendations</h2>
+        
+        <div class="recommendations">
+            <h4 style="margin-top: 0; color: #007bff;">Recommended Actions:</h4>
+            <ul>
+                {% for recommendation in recommendations %}
+                <li>{{ recommendation }}</li>
+                {% endfor %}
+            </ul>
+            
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #dee2e6;">
+                <small style="color: #666;">
+                    <strong>Note:</strong> These recommendations are generated based on the risk assessment results and should be reviewed by a qualified healthcare provider. Individual patient circumstances may require modified approaches.
+                </small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Additional Patient Information -->
+    {% if latest_metrics %}
+    <div class="section">
+        <h2 class="section-title">Recent Clinical Metrics</h2>
+        
+        <table class="data-table">
+            <tr>
+                <th>Visit Date</th>
+                <td>{{ latest_metrics.visit_date.strftime('%B %d, %Y') if latest_metrics.visit_date else 'N/A' }}</td>
+            </tr>
+            {% if latest_metrics.bmi %}
+            <tr>
+                <th>BMI</th>
+                <td>{{ "%.1f"|format(latest_metrics.bmi) }} kg/m²</td>
+            </tr>
+            {% endif %}
+            {% if latest_metrics.systolic_bp and latest_metrics.diastolic_bp %}
+            <tr>
+                <th>Blood Pressure</th>
+                <td>{{ latest_metrics.systolic_bp }}/{{ latest_metrics.diastolic_bp }} mmHg</td>
+            </tr>
+            {% endif %}
+            {% if patient.gestational_age_weeks %}
+            <tr>
+                <th>Gestational Age</th>
+                <td>{{ patient.gestational_age_weeks }} weeks</td>
+            </tr>
+            {% endif %}
+            {% if patient.parity %}
+            <tr>
+                <th>Parity</th>
+                <td>{{ patient.parity }}</td>
+            </tr>
+            {% endif %}
+            {% if latest_metrics.notes %}
+            <tr>
+                <th>Clinical Notes</th>
+                <td>{{ latest_metrics.notes }}</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Model Information -->
+    <div class="section">
+        <h2 class="section-title">Assessment Details</h2>
+        
+        <table class="data-table">
+            <tr>
+                <th>Assessment ID</th>
+                <td>{{ risk_assessment.id }}</td>
+            </tr>
+            <tr>
+                <th>Model Version</th>
+                <td>{{ risk_assessment.model_version or 'v1.0.0' }}</td>
+            </tr>
+            <tr>
+                <th>Risk Label</th>
+                <td>{{ risk_assessment.risk_label }}</td>
+            </tr>
+            <tr>
+                <th>Assessed By</th>
+                <td>{{ risk_assessment.assessed_by_user.name if risk_assessment.assessed_by_user else 'System' }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="section">
+        <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px;">
+            <h4 style="color: #856404; margin-top: 0;">⚠️ Important Disclaimer</h4>
+            <p style="margin-bottom: 0; color: #856404; font-size: 11px;">
+                This risk assessment is for clinical decision support only and should not replace clinical judgment. 
+                The results are based on statistical models and population data. Individual patient factors not 
+                captured in this assessment may significantly impact actual risk. Always consult with qualified 
+                healthcare providers for diagnosis and treatment decisions. This assessment does not constitute 
+                medical advice, diagnosis, or treatment recommendation.
+            </p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div>
+            Generated by GDM Risk Prediction System | 
+            Report ID: {{ risk_assessment.id }} | 
+            Generated on {{ generated_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}
+        </div>
+        <div style="margin-top: 5px;">
+            © 2024 GDM Risk Prediction System - Clinical Decision Support Tool
+        </div>
+    </div>
+</body>
+</html>

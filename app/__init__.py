@@ -5,6 +5,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 
+
 from app.config import config
 
 # Initialize extensions
@@ -59,6 +60,10 @@ def create_app(config_name=None):
     app.register_blueprint(auth_bp)
     app.register_blueprint(patients_bp)
     app.register_blueprint(risk_bp)
+
+    from app.routes.reports import reports_bp
+    app.register_blueprint(reports_bp)
+    
     
     # Register CLI commands
     from cli_commands import register_cli_commands
