@@ -74,6 +74,9 @@ class PDFReportService:
             from app import db
             from app.models.report import Report
             
+            # Use assessment creation time or current time for header
+            generated_at = risk_assessment.created_at or datetime.utcnow()
+            
             # Generate unique filename
             filename = f"gdm_report_{risk_assessment.patient.uuid}_{uuid.uuid4().hex[:8]}.pdf"
             pdf_path = self.reports_dir / filename
@@ -92,7 +95,7 @@ class PDFReportService:
             story = []
             
             # Add header
-            self._add_header(story)
+            self._add_header(story, generated_at)
             
             # Add patient information
             self._add_patient_info(story, risk_assessment)
@@ -153,13 +156,17 @@ class PDFReportService:
             current_app.logger.error(f"PDF generation failed: {str(e)}")
             raise Exception(f"Failed to generate PDF report: {str(e)}")
     
-    def _add_header(self, story):
+    def _add_header(self, story, generated_at):
         """Add report header."""
-        header_text = """
-        <para align="center"><b>🩺 GDM Risk Prediction System</b></para>
-        <para align="center">Gestational Diabetes Mellitus Risk Assessment Report</para>
-        <para align="center"><i>Generated on {}</i></para>
-        """.format(datetime.now().strftime('%B %d, %Y at %I:%M %p'))
+        generated_at_str = generated_at.strftime('%B %d, %Y at %I:%M %p')
+        
+        header_text = (
+            '<para align="center">'
+            '<b>GDM Risk Prediction System</b><br/>'
+            'Gestational Diabetes Mellitus Risk Assessment Report<br/>'
+            f'<i>Generated on {generated_at_str}</i>'
+            '</para>'
+        )
         
         story.append(Paragraph(header_text, self.title_style))
         story.append(Spacer(1, 20))
@@ -206,17 +213,23 @@ class PDFReportService:
         risk_percent = assessment.risk_score * 100
         risk_level = self._get_risk_level(assessment.risk_score)
         
-        risk_color = colors.green if risk_level == "Low" else colors.orange if risk_level == "Moderate" else colors.red
+        risk_color = (
+            colors.green if risk_level == "Low"
+            else colors.orange if risk_level == "Moderate"
+            else colors.red
+        )
         
-        risk_text = f"""
-        <para align="center"><b><font size="16" color="{risk_color.hexval()}">
-        Risk Score: {risk_percent:.1f}%
-        </font></b></para>
-        <para align="center"><b><font size="14" color="{risk_color.hexval()}">
-        {risk_level} Risk
-        </font></b></para>
-        <para align="center">{self._get_risk_description(risk_level)}</para>
-        """
+        risk_text = (
+            '<para align="center">'
+            f'<b><font size="16" color="{risk_color.hexval()}">'
+            f'Risk Score: {risk_percent:.1f}%'
+            '</font></b><br/>'
+            f'<b><font size="14" color="{risk_color.hexval()}">'
+            f'{risk_level} Risk'
+            '</font></b><br/>'
+            f'{self._get_risk_description(risk_level)}'
+            '</para>'
+        )
         
         story.append(Paragraph(risk_text, self.normal_style))
         story.append(Spacer(1, 20))
@@ -272,28 +285,28 @@ class PDFReportService:
             
             story.append(Paragraph(rec_text, self.normal_style))
             
-            disclaimer = """
-            <br/><b>Note:</b> These recommendations are generated based on the risk assessment 
-            results and should be reviewed by a qualified healthcare provider. Individual 
-            patient circumstances may require modified approaches.
-            """
+            disclaimer = (
+                "<br/><b>Note:</b> These recommendations are generated based on the risk assessment "
+                "results and should be reviewed by a qualified healthcare provider. Individual "
+                "patient circumstances may require modified approaches."
+            )
             story.append(Paragraph(disclaimer, self.normal_style))
         
         story.append(Spacer(1, 20))
     
     def _add_disclaimer(self, story):
         """Add important disclaimer."""
-        disclaimer_text = """
-        <para align="center"><b>⚠️ Important Disclaimer</b></para>
-        <para>
-        This risk assessment is for clinical decision support only and should not replace 
-        clinical judgment. The results are based on statistical models and population data. 
-        Individual patient factors not captured in this assessment may significantly impact 
-        actual risk. Always consult with qualified healthcare providers for diagnosis and 
-        treatment decisions. This assessment does not constitute medical advice, diagnosis, 
-        or treatment recommendation.
-        </para>
-        """
+        disclaimer_text = (
+            "<para>"
+            "<b>Important Disclaimer</b><br/>"
+            "This risk assessment is for clinical decision support only and should not replace "
+            "clinical judgment. The results are based on statistical models and population data. "
+            "Individual patient factors not captured in this assessment may significantly impact "
+            "actual risk. Always consult with qualified healthcare providers for diagnosis and "
+            "treatment decisions. This assessment does not constitute medical advice, diagnosis, "
+            "or treatment recommendation."
+            "</para>"
+        )
         
         style = ParagraphStyle(
             'Disclaimer',

@@ -22,6 +22,7 @@ class Config:
 class DevelopmentConfig(Config):
     DEBUG = True
     TESTING = False
+    WTF_CSRF_ENABLED = False  # TEMPORARY - disable CSRF for testing
 
 class ProductionConfig(Config):
     DEBUG = False

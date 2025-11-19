@@ -7,7 +7,6 @@ from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Bool
 from sqlalchemy.orm import relationship
 from app import db
 
-
 class Report(db.Model):
     """Model for storing report metadata and PDF paths."""
     
@@ -31,19 +30,18 @@ class Report(db.Model):
     pdf_path = Column(String(500))      # Full path to PDF file
     file_size = Column(Integer)         # File size in bytes
     
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    
     # Metadata
     generated_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     is_active = Column(Boolean, nullable=False, default=True)
     
-    # Explicit unique constraint with name
-    __table_args__ = (
-        UniqueConstraint('uuid', name='uq_report_uuid'),
+    # 🔹 UPDATED: hook into RiskAssessment.reports via back_populates
+    risk_assessment = relationship(
+        'RiskAssessment',
+        back_populates='reports',
+        foreign_keys=[risk_assessment_id]
     )
-    
-    # Relationships - only define the ones that don't already exist as backrefs
-    # Note: 'patient' backref is already created by Patient.reports relationship
-    # Note: We'll create these relationships for RiskAssessment and User
-    risk_assessment = relationship('RiskAssessment', foreign_keys=[risk_assessment_id])
     generator = relationship('User', foreign_keys=[generated_by])
     
     def __repr__(self):

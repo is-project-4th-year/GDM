@@ -16,12 +16,12 @@
         </div>
     </div>
     
-    <!-- Form Section -->
+    <!-- Form Section (no sidebar) -->
     <div class="row justify-content-center">
-        <div class="col-lg-8 col-xl-6">
+        <div class="col-lg-8 col-xl-7">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">
+                    <h5 class="mb-0 d-flex align-items-center">
                         <i class="bi bi-clipboard-data me-2"></i>
                         Patient Information
                     </h5>
@@ -32,16 +32,16 @@
                         {{ form.hidden_tag() }}
                         
                         <!-- Basic Information -->
-                        <div class="row mb-4">
+                        <div class="row g-3 mb-4">
                             <div class="col-12">
-                                <h6 class="text-primary mb-3">
+                                <h6 class="text-primary mb-2">
                                     <i class="bi bi-person me-1"></i>Basic Information
                                 </h6>
                             </div>
                             
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6">
                                 {{ form.first_name.label(class="form-label fw-semibold required") }}
-                                {{ form.first_name(class="form-control" + (" is-invalid" if form.first_name.errors else "")) }}
+                                {{ form.first_name(class="form-control form-control-lg" + (" is-invalid" if form.first_name.errors else "")) }}
                                 {% if form.first_name.errors %}
                                     <div class="invalid-feedback">
                                         {% for error in form.first_name.errors %}
@@ -51,9 +51,9 @@
                                 {% endif %}
                             </div>
                             
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6">
                                 {{ form.last_name.label(class="form-label fw-semibold required") }}
-                                {{ form.last_name(class="form-control" + (" is-invalid" if form.last_name.errors else "")) }}
+                                {{ form.last_name(class="form-control form-control-lg" + (" is-invalid" if form.last_name.errors else "")) }}
                                 {% if form.last_name.errors %}
                                     <div class="invalid-feedback">
                                         {% for error in form.last_name.errors %}
@@ -63,9 +63,9 @@
                                 {% endif %}
                             </div>
                             
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6">
                                 {{ form.date_of_birth.label(class="form-label fw-semibold required") }}
-                                {{ form.date_of_birth(class="form-control" + (" is-invalid" if form.date_of_birth.errors else "")) }}
+                                {{ form.date_of_birth(class="form-control form-control-lg" + (" is-invalid" if form.date_of_birth.errors else "")) }}
                                 {% if form.date_of_birth.errors %}
                                     <div class="invalid-feedback">
                                         {% for error in form.date_of_birth.errors %}
@@ -73,21 +73,20 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
-                                <div class="form-text">Patient must be between 12 and 60 years old</div>
                             </div>
                         </div>
                         
                         <!-- Contact Information -->
-                        <div class="row mb-4">
+                        <div class="row g-3 mb-4">
                             <div class="col-12">
-                                <h6 class="text-primary mb-3">
+                                <h6 class="text-primary mb-2">
                                     <i class="bi bi-telephone me-1"></i>Contact Information
                                 </h6>
                             </div>
                             
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6">
                                 {{ form.national_id.label(class="form-label fw-semibold") }}
-                                {{ form.national_id(class="form-control" + (" is-invalid" if form.national_id.errors else "")) }}
+                                {{ form.national_id(class="form-control form-control-lg" + (" is-invalid" if form.national_id.errors else "")) }}
                                 {% if form.national_id.errors %}
                                     <div class="invalid-feedback">
                                         {% for error in form.national_id.errors %}
@@ -95,12 +94,11 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
-                                <div class="form-text">Optional: National ID, SSN, or other identifier</div>
                             </div>
                             
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6">
                                 {{ form.phone.label(class="form-label fw-semibold") }}
-                                {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else "")) }}
+                                {{ form.phone(class="form-control form-control-lg" + (" is-invalid" if form.phone.errors else "")) }}
                                 {% if form.phone.errors %}
                                     <div class="invalid-feedback">
                                         {% for error in form.phone.errors %}
@@ -108,21 +106,20 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
-                                <div class="form-text">Optional: Contact phone number</div>
                             </div>
                         </div>
                         
                         <!-- Pregnancy Information -->
-                        <div class="row mb-4">
+                        <div class="row g-3 mb-4">
                             <div class="col-12">
-                                <h6 class="text-primary mb-3">
+                                <h6 class="text-primary mb-2">
                                     <i class="bi bi-heart-pulse me-1"></i>Pregnancy Information
                                 </h6>
                             </div>
                             
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6">
                                 {{ form.parity.label(class="form-label fw-semibold") }}
-                                {{ form.parity(class="form-control" + (" is-invalid" if form.parity.errors else "")) }}
+                                {{ form.parity(class="form-control form-control-lg" + (" is-invalid" if form.parity.errors else "")) }}
                                 {% if form.parity.errors %}
                                     <div class="invalid-feedback">
                                         {% for error in form.parity.errors %}
@@ -130,12 +127,11 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
-                                <div class="form-text">Total number of previous pregnancies (0-20)</div>
                             </div>
                             
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-6">
                                 {{ form.gestational_age_weeks.label(class="form-label fw-semibold") }}
-                                {{ form.gestational_age_weeks(class="form-control" + (" is-invalid" if form.gestational_age_weeks.errors else "")) }}
+                                {{ form.gestational_age_weeks(class="form-control form-control-lg" + (" is-invalid" if form.gestational_age_weeks.errors else "")) }}
                                 {% if form.gestational_age_weeks.errors %}
                                     <div class="invalid-feedback">
                                         {% for error in form.gestational_age_weeks.errors %}
@@ -143,7 +139,6 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
-                                <div class="form-text">Current gestational age (1-42 weeks)</div>
                             </div>
                         </div>
                         
@@ -156,63 +151,12 @@
                                         Cancel
                                     </a>
                                     
-                                    <div>
-                                        <span class="text-muted me-3">
-                                            <i class="bi bi-info-circle me-1"></i>
-                                            Fields marked with * are required
-                                        </span>
-                                        {{ form.submit(class="btn btn-primary px-4") }}
-                                    </div>
+                                    {{ form.submit(class="btn btn-primary btn-lg px-4") }}
                                 </div>
                             </div>
                         </div>
                         
                     </form>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Help Sidebar -->
-        <div class="col-lg-4 col-xl-3">
-            <div class="card border-0 bg-light">
-                <div class="card-header bg-transparent border-0">
-                    <h6 class="mb-0">
-                        <i class="bi bi-lightbulb me-1 text-warning"></i>
-                        Quick Tips
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <ul class="list-unstyled small">
-                        <li class="mb-2">
-                            <i class="bi bi-check-circle text-success me-2"></i>
-                            Enter accurate birth date for age calculations
-                        </li>
-                        <li class="mb-2">
-                            <i class="bi bi-check-circle text-success me-2"></i>
-                            National ID helps prevent duplicate records
-                        </li>
-                        <li class="mb-2">
-                            <i class="bi bi-check-circle text-success me-2"></i>
-                            Pregnancy info improves risk assessments
-                        </li>
-                        <li class="mb-2">
-                            <i class="bi bi-check-circle text-success me-2"></i>
-                            You can add clinical metrics after saving
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="card border-0 bg-info bg-opacity-10 mt-3">
-                <div class="card-body">
-                    <h6 class="text-info">
-                        <i class="bi bi-shield-check me-1"></i>
-                        Privacy & Security
-                    </h6>
-                    <small class="text-muted">
-                        All patient data is encrypted and stored securely. 
-                        Access is logged for compliance and auditing purposes.
-                    </small>
                 </div>
             </div>
         </div>
@@ -240,7 +184,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (birthDate < today) {
                 const age = Math.floor((today - birthDate) / (365.25 * 24 * 60 * 60 * 1000));
                 
-                // Show age preview
                 let agePreview = document.querySelector('#age-preview');
                 if (!agePreview) {
                     agePreview = document.createElement('div');
@@ -252,19 +195,51 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Format phone number input
-    const phoneField = document.querySelector('#phone');
-    if (phoneField) {
-        phoneField.addEventListener('input', function() {
-            let value = this.value.replace(/\D/g, '');
-            if (value.length >= 10) {
-                value = value.slice(0, 10);
-                value = `+1 ${value.slice(0, 3)} ${value.slice(3, 6)} ${value.slice(6)}`;
-                this.value = value;
-            }
-        });
-    }
+
+    // Format phone number input for Kenyan (+254) numbers
+const phoneField = document.querySelector('#phone');
+
+if (phoneField) {
+
+    // Always enforce +254 prefix on focus
+    phoneField.addEventListener('focus', function() {
+        if (!this.value.startsWith("+254")) {
+            this.value = "+254 ";
+        }
+    });
+
+    // Prevent deleting the +254 prefix
+    phoneField.addEventListener('keydown', function(e) {
+        if (this.selectionStart <= 5 && (e.key === "Backspace" || e.key === "Delete")) {
+            e.preventDefault();
+        }
+    });
+
+    // Main formatting logic
+    phoneField.addEventListener('input', function() {
+        let digits = this.value.replace(/\D/g, "");
+
+        // Remove the 254 prefix digits when processing
+        digits = digits.substring(3);
+
+        // Strip leading zero if typed (07xx → 7xx)
+        if (digits.startsWith("0")) {
+            digits = digits.substring(1);
+        }
+
+        // Maximum Kenyan local digits = 9
+        digits = digits.substring(0, 9);
+
+        // Build properly formatted output
+        let formatted = "+254 ";
+        if (digits.length > 0) formatted += digits.substring(0, 3);
+        if (digits.length > 3) formatted += " " + digits.substring(3, 6);
+        if (digits.length > 6) formatted += " " + digits.substring(6);
+
+        this.value = formatted.trim();
+    });
+}
+
 });
 </script>
 
@@ -277,15 +252,18 @@ document.addEventListener('DOMContentLoaded', function() {
 .form-control:focus,
 .form-select:focus {
     border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
 }
 
 .card {
-    transition: transform 0.2s ease-in-out;
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .card:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.12);
 }
 </style>
 {% endblock %}

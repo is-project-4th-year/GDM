@@ -101,7 +101,7 @@ def generate_report(assessment_id):
         
     except Exception as e:
         flash(f'Error generating report: {str(e)}', 'error')
-        return redirect(url_for('risk.view_assessment', id=assessment_id))
+        return redirect(url_for('risk.view_assessment', assessment_id=assessment_id))
 
 
 @reports_bp.route('/preview/<int:assessment_id>')
@@ -142,37 +142,83 @@ def preview_report(assessment_id):
         ]
     )
 
-
 @reports_bp.route('/view/<int:report_id>')
 @login_required
 def view_report(report_id):
-    """View report details and download options."""
+    """View report details and download options (reuses preview layout)."""
     
     from app.models.report import Report
     from app.models.audit_log import AuditLog, AuditAction
-    
+    from app.services.pdf_service import PDFReportService
+
     report = Report.query.get_or_404(report_id)
-    
+
     if not report.is_active:
         flash('This report is no longer available.', 'warning')
         return redirect(url_for('reports.list_reports'))
-    
+
+    # Get the linked assessment
+    assessment = report.risk_assessment
+    if assessment is None:
+        flash('This report is not linked to a risk assessment.', 'error')
+        return redirect(url_for('reports.list_reports'))
+
+    # Use the same data-prep helper as the preview route
+    pdf_service = PDFReportService()
+    report_data = pdf_service._prepare_report_data(
+        assessment,
+        include_recommendations=True
+    )
+
     # Log the view action
     AuditLog.log_action(
-        action=AuditAction.VIEW_PATIENT,
+        action=AuditAction.VIEW_PATIENT,  # or a VIEW_REPORT action if you have one
         user_id=current_user.id,
         details=f"Viewed report {report.uuid}"
     )
-    
+
     return render_template(
-        'reports/view.html',
+        'reports/preview.html',
         report=report,
+        assessment=assessment,
+        **report_data,  # provides patient, risk_assessment, input_data, etc.
         breadcrumbs=[
             {'name': 'Dashboard', 'url': url_for('core.dashboard')},
             {'name': 'Reports', 'url': url_for('reports.list_reports')},
             {'name': report.title, 'url': url_for('reports.view_report', report_id=report.id)}
         ]
     )
+
+# @reports_bp.route('/view/<int:report_id>')
+# @login_required
+# def view_report(report_id):
+#     """View report details and download options."""
+    
+#     from app.models.report import Report
+#     from app.models.audit_log import AuditLog, AuditAction
+    
+#     report = Report.query.get_or_404(report_id)
+    
+#     if not report.is_active:
+#         flash('This report is no longer available.', 'warning')
+#         return redirect(url_for('reports.list_reports'))
+    
+#     # Log the view action
+#     AuditLog.log_action(
+#         action=AuditAction.VIEW_PATIENT,
+#         user_id=current_user.id,
+#         details=f"Viewed report {report.uuid}"
+#     )
+    
+#     return render_template(
+#         'reports/preview.html',
+#         report=report,
+#         breadcrumbs=[
+#             {'name': 'Dashboard', 'url': url_for('core.dashboard')},
+#             {'name': 'Reports', 'url': url_for('reports.list_reports')},
+#             {'name': report.title, 'url': url_for('reports.view_report', report_id=report.id)}
+#         ]
+#     )
 
 
 @reports_bp.route('/download/<int:report_id>')

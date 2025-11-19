@@ -11,26 +11,26 @@ class PatientForm(FlaskForm):
     first_name = StringField('First Name', validators=[
         DataRequired(message='First name is required'),
         Length(min=2, max=50, message='First name must be between 2 and 50 characters')
-    ], render_kw={'placeholder': 'Enter first name', 'class': 'form-control'})
+    ], render_kw={'placeholder': 'First name', 'class': 'form-control'})
     
     last_name = StringField('Last Name', validators=[
         DataRequired(message='Last name is required'),
         Length(min=2, max=50, message='Last name must be between 2 and 50 characters')
-    ], render_kw={'placeholder': 'Enter last name', 'class': 'form-control'})
+    ], render_kw={'placeholder': 'Last name', 'class': 'form-control'})
     
     date_of_birth = DateField('Date of Birth', validators=[
         DataRequired(message='Date of birth is required')
     ], render_kw={'class': 'form-control'})
     
-    national_id = StringField('National ID / SSN', validators=[
+    national_id = StringField('National ID / Passport Number', validators=[
         Optional(),
-        Length(max=50, message='National ID must be less than 50 characters')
-    ], render_kw={'placeholder': 'Optional - National ID, SSN, etc.', 'class': 'form-control'})
+        Length(min=7, max=50, message='National ID must be less than 50 characters')
+    ], render_kw={'placeholder': 'National ID', 'class': 'form-control'})
     
     phone = StringField('Phone Number', validators=[
         Optional(),
         Length(max=20, message='Phone number must be less than 20 characters')
-    ], render_kw={'placeholder': 'Optional - +1 234 567 8900', 'class': 'form-control'})
+    ], render_kw={'placeholder': '+254', 'class': 'form-control'})
     
     parity = IntegerField('Parity (Previous Pregnancies)', validators=[
         Optional(),
@@ -69,6 +69,19 @@ class PatientForm(FlaskForm):
                 # If we're editing and it's the same patient, allow it
                 if not hasattr(self, 'patient_id') or existing_patient.id != getattr(self, 'patient_id', None):
                     raise ValidationError('A patient with this National ID already exists.')
+    
+    def validate_phone(self, field):
+        """Ensure phone number starts with +254 and is valid."""
+        if field.data and field.data.strip():
+            phone = field.data.replace(" ", "")
+            
+            # must start with +254
+            if not phone.startswith("+254"):
+                raise ValidationError("Phone number must start with +254.")
+            
+            # must be exactly +254XXXXXXXXX (9 digits after 254)
+            if len(phone) != 13:
+                raise ValidationError("Enter a valid Kenyan phone number (e.g., +254712345678).")
 
 
 class PatientSearchForm(FlaskForm):

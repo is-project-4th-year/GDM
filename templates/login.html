@@ -16,6 +16,14 @@
                 </div>
                 
                 <div class="card-body p-4">
+                    <!-- TEMPORARY DEBUG - Remove after fixing -->
+                    <div class="alert alert-warning small">
+                        <strong>Debug Info:</strong><br>
+                        CSRF Token: {{ csrf_token() }}<br>
+                        Form has CSRF: {{ 'Yes' if form.csrf_token else 'No' }}<br>
+                        SECRET_KEY exists: {{ 'Yes' if config.SECRET_KEY else 'No' }}
+                    </div>
+                    
                     <form method="POST" novalidate>
                         {{ form.hidden_tag() }}
                         

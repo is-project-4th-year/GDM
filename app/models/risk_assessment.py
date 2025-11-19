@@ -26,6 +26,14 @@ class RiskAssessment(db.Model):
     
     # Relationships
     assessor = db.relationship('User', backref='risk_assessments')
+
+    # 🔹 NEW: collection of reports for this assessment
+    reports = db.relationship(
+        'Report',
+        back_populates='risk_assessment',
+        lazy='dynamic',
+        cascade='all, delete-orphan'
+    )
     
     def __init__(self, patient_id, assessed_by, input_vector, risk_score, model_version):
         """Initialize risk assessment."""
